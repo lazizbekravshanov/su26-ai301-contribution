@@ -1,152 +1,89 @@
-# su26-ai301-contribution
-Codepath ai301
+# Contribution README
 
-Contribution [#]: [Issue Title]
+**Name:** Lazizbek Ravshanov
+**Program:** CodePath AI301, Summer 2026
+**Status:** Phase I Complete
 
-Contribution Number: [1 / 2 / 3]  
-Student: [Your Name]  
-Issue: [GitHub issue link]  
-Status: [Phase I / Phase II / Phase III / Phase IV] [In Progress / Complete]
+---
 
-***
-Why I Chose This Issue
+## Project
 
-[1-2 paragraphs explaining why this issue interests you, how it matches your skills/learning goals, what you hope to learn]
+**Project:** [marimo-team/marimo-lsp](https://github.com/marimo-team/marimo-lsp)
+**My fork:** https://github.com/lazizbekravshanov/marimo-lsp
 
-***
-Understanding the Issue
+marimo-lsp is the language server and official VS Code extension for marimo, an open-source reactive Python notebook. It bridges three runtimes — the VS Code notebook UI, a Python LSP server, and the marimo kernel — so marimo notebooks run natively inside VS Code.
 
-Problem Description
+---
 
-[In your own words, what's broken or missing?]
+## Phase I: Issue Selection
 
-Expected Behavior
+### Issue
 
-[What should happen?]
+[marimo-team/marimo-lsp #154: Extension runs cells marked as disabled](https://github.com/marimo-team/marimo-lsp/issues/154)
 
-Current Behavior
+Labels: `bug`, `good first issue`
 
-[What actually happens?]
+### Why I Chose This Issue
 
-Affected Components
+Cells marked `@app.cell(disabled=True)` execute anyway when run from the VS Code extension, while marimo's own frontend respects the flag. The core maintainer confirmed disabled cells "aren't currently supported" in the extension, called the fix achievable, added it to the roadmap, and explicitly wrote "we'd welcome a contribution." I verified before claiming it: no assignee, no linked pull requests, and the repository is exceptionally responsive — PRs were merged the same day I checked, and maintainers replied to recent issues within minutes to a few hours.
 
-[Which parts of the codebase are involved?]
+### Issue Selection Checklist Notes
 
-***
-Reproduction Process
+I ran this issue through the Phase I selection checklist. My notes:
 
-Environment Setup
+1. **I understand the problem.** In one sentence: running a cell marked `@app.cell(disabled=True)` from the VS Code extension executes it, when it should be skipped. "Fixed" looks like: the extension respects the disabled cell config the same way marimo's own frontend does, with a regression test (`just test`) covering it.
+2. **Scope fits 3 to 4 weeks.** The change is contained to the cell-run path between the extension's `KernelManager` and the LSP server's command handler, which `ARCHITECTURE.md` documents in detail. No marimo core changes are required.
+3. **Matches my skills.** Python (the LSP server) and TypeScript (the extension), with an unusually thorough `ARCHITECTURE.md` mapping the exact message flow I need to trace.
+4. **Active and claimable.** No assignee, no linked PR, no competing claim comments. I measured the repository before choosing: PRs merged daily and maintainers replied to the last ten issues within minutes to a few hours.
+5. **Helpful context.** The core maintainer triaged the issue and put it on the roadmap; `ARCHITECTURE.md` documents the three LSP channels between extension, server, and kernel; marimo's own docs specify the intended disabled-cell behavior to match.
+6. **Clear setup documentation.** `CONTRIBUTING.md` gives a quick start (open in VS Code, press F5), the exact tooling (`uv`, `pnpm`, `just`), a pinned `.marimo-version` for the side-by-side marimo checkout, and `just lint` / `just test` commands. marimo also runs an active Discord community for contributor questions.
 
-[Notes on setting up your local development environment - challenges you faced, how you solved them]
+All six checks passed.
 
-Steps to Reproduce
+### Risks I Noted
 
-[Step 1]
-[Step 2]
-[Observed result]
+The repository moves fast (multiple merges per day), so the code around my fix may shift while I work; I will rebase frequently and open a draft PR early. The maintainers may also prefer the fix at the extension (TypeScript) layer or the LSP server (Python) layer, so I asked in my claim comment to surface that preference before I write code.
 
-Reproduction Evidence
+---
 
-Commit showing reproduction: [Link to commit in your fork]
-Screenshots/logs: [If applicable]
-My findings: [What you discovered during reproduction]
+## Phase II: Reproduce and Plan
 
-***
-Solution Approach
+*To be completed.*
 
-Analysis
+### Understanding the Issue
 
-[Your analysis of the root cause - what's causing the issue?]
+### Reproduction Process
 
-Proposed Solution
+### Solution Approach
 
-[High-level description of your fix approach]
+---
 
-Implementation Plan
+## Phase III: Build
 
-Using UMPIRE framework (adapted):
+*To be completed.*
 
-Understand: [Restate the problem]
+### Testing Strategy
 
-Match: [What similar patterns/solutions exist in the codebase?]
+### Implementation Notes
 
-Plan: [Step-by-step implementation plan]
-[Modify file X to do Y]
-[Add function Z]
-[Update tests]
+---
 
-Implement: [Link to your branch/commits as you work]
+## Phase IV: Submit and Iterate
 
-Review: [Self-review checklist - does it follow the project's contribution guidelines?]
+*To be completed.*
 
-Evaluate: [How will you verify it works?]
+### Pull Request
 
-***
-Testing Strategy
+### Summary
 
-Unit Tests
+### Maintainer Feedback Log
 
-Test case 1: [Description]
-Test case 2: [Description]
-Test case 3: [Description]
+---
 
-Integration Tests
+## AI Tool Usage Log
 
-Integration scenario 1
-Integration scenario 2
+I am responsible for every line in my pull request. This table logs how I used AI tools, per course policy.
 
-Manual Testing
-
-[What you tested manually and results]
-
-***
-Implementation Notes
-
-Week [X] Progress
-
-[What you built this week, challenges faced, decisions made]
-
-Week [Y] Progress
-
-[Continue documenting as you work]
-
-Code Changes
-
-Files modified: [List]
-Key commits: [Links to important commits]
-Approach decisions: [Why you chose certain approaches]
-
-***
-Pull Request
-
-PR Link: [GitHub PR URL when submitted]
-
-PR Description: [Draft or final PR description - much of the content above can be adapted]
-
-Maintainer Feedback:
-[Date]: [Summary of feedback received]
-[Date]: [How you addressed it]
-
-Status: [Awaiting review / Iterating / Approved / Merged]
-
-***
-Learnings & Reflections
-
-Technical Skills Gained
-
-[What you learned technically]
-
-Challenges Overcome
-
-[What was hard and how you solved it]
-
-What I'd Do Differently Next Time
-
-[Reflection on your process]
-
-***
-Resources Used
-
-[Link to helpful documentation]
-[Tutorial or Stack Overflow post that helped]
-[GitHub issues or discussions that helped]
+| Date | Tool | What I used it for | What I verified myself |
+|---|---|---|---|
+| 2026-06-10 | Claude | Scoring candidate repositories from the course issue list for maintainer responsiveness (time-to-first-reply, merge cadence) and screening issues for existing claims, assignees, and linked PRs | I read issue #154 and the maintainer's comment, `CONTRIBUTING.md`, and `ARCHITECTURE.md` directly to confirm scope, setup steps, and that no assignee or pull request exists |

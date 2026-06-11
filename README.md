@@ -145,11 +145,23 @@ Skip disabled cells inside `extractExecuteCodeRequest`'s loop, exposed through a
 
 ## Phase III: Build
 
-*To be completed.*
-
 ### Testing Strategy
 
+Defined in Phase II (the regression test already exists on the working branch and fails by design until the fix lands):
+
+**Unit tests** (`extension/src/lib/__tests__/extractExecuteCodeRequest.test.ts`, vitest):
+- Test case 1: enabled cells with stable ids are included in the execution request (sanity, passing today).
+- Test case 2: cells without a stable id are skipped (sanity, passing today).
+- Test case 3: a cell with `metadata.options = { disabled: true }` is excluded from `codes` and `cellIds` (the regression test — fails today, flips green with the fix).
+- To add with the fix: a selection containing only disabled cells returns `Option.none()` (exercises the corrected empty-request branch).
+
+**Suite checks:** full `just test-ts` must stay green (baseline: 40 files, 429 passed / 1 skipped); `just lint` clean; one `just test-vscode` integration run as a pre-PR sanity check (no new integration test — the bug is fully exercised at the unit seam).
+
+**Manual testing:** the F5 end-to-end repro from Phase II, re-run after the fix — the disabled cell must show no output while the enabled cell runs.
+
 ### Implementation Notes
+
+*To be completed in Phase III (fix lands on the `fix-issue-154-disabled-cells` branch).*
 
 ---
 
@@ -162,6 +174,39 @@ Skip disabled cells inside `extractExecuteCodeRequest`'s loop, exposed through a
 ### Summary
 
 ### Maintainer Feedback Log
+
+---
+
+## Learnings & Reflections
+
+### Technical Skills Gained
+
+- How a dual-stack VS Code extension is wired: a Python LSP server (pygls) bridging VS Code's notebook protocol to a marimo kernel, with the TypeScript extension consuming custom LSP commands (`marimo.api`, `execute-cells`) — and how to trace a user-visible bug down through that stack to a single function.
+- pnpm `link:` workspace dependencies and why a package's tests can require a sibling repository checkout (and its own installed workspace) to even import.
+- Effect-TS testing patterns (`it.effect`, `Effect.gen`, layered `Constants` providers) and writing a regression test that documents a bug before fixing it.
+- Evidence-first debugging: running the LSP server's own deserialize path to prove the wire format of `disabled=True` (`options: {"disabled": true}`) instead of guessing from the schema.
+
+### Challenges Overcome
+
+- The baseline test suite failed twice on a clean checkout (missing `@marimo-team/smart-cells` link target, then missing marimo workspace dependencies). Diagnosed from the error chain (`Cannot find package` → `link:../../marimo/...` in package.json → `Tsconfig not found` → workspace `pnpm install`) rather than trial-and-error.
+- Choosing an issue that was genuinely available: my first two candidate issues (apache/burr #138, then several pytorch/ao and Daft issues) turned out to be claimed or already have open PRs — I learned to check assignees, linked PRs, *and* recent commenters before claiming.
+
+### What I'd Do Differently Next Time
+
+- Check the issue sheet's "Claimed?" column and linked PRs *first*, before investing in repo analysis.
+- Read `CONTRIBUTING.md` for sibling-checkout requirements before running the test suite, not after it fails.
+
+*To be extended after Phases III–IV.*
+
+---
+
+## Resources Used
+
+- [Issue #154](https://github.com/marimo-team/marimo-lsp/issues/154) and the maintainer's triage comment
+- [`ARCHITECTURE.md`](https://github.com/marimo-team/marimo-lsp/blob/main/ARCHITECTURE.md) — the three LSP channels (document sync, custom commands, `marimo/operation` notifications)
+- [`CONTRIBUTING.md`](https://github.com/marimo-team/marimo-lsp/blob/main/CONTRIBUTING.md) — toolchain (`uv`, `pnpm`, `just`), F5 launch flow, side-by-side marimo checkout
+- marimo documentation (docs.marimo.io) — reactive execution and disabling cells
+- [Effect-TS docs](https://effect.website) — `Option`, `Effect.gen`, and the `@effect/vitest` test helpers used by the repo's test suite
 
 ---
 

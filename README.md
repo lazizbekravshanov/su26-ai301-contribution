@@ -2,7 +2,7 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status:** Phase II Complete
+**Status:** Phase III Complete
 
 ---
 
@@ -147,17 +147,17 @@ Skip disabled cells inside `extractExecuteCodeRequest`'s loop, exposed through a
 
 ### Testing Strategy
 
-Defined in Phase II (the regression test already exists on the working branch and fails by design until the fix lands):
+The strategy was defined in Phase II (a regression test written first, failing by design) and executed in Phase III. CONTRIBUTING.md requires lint + tests to pass (enforced by pre-commit hooks via `uvx pre-commit install`); there is no PR template, and the repo's merged-PR style is a plain descriptive title with `(#NNN)`.
 
-**Unit tests** (`extension/src/lib/__tests__/extractExecuteCodeRequest.test.ts`, vitest):
-- Test case 1: enabled cells with stable ids are included in the execution request (sanity, passing today).
-- Test case 2: cells without a stable id are skipped (sanity, passing today).
-- Test case 3: a cell with `metadata.options = { disabled: true }` is excluded from `codes` and `cellIds` (the regression test — fails today, flips green with the fix).
-- To add with the fix: a selection containing only disabled cells returns `Option.none()` (exercises the corrected empty-request branch).
+**Unit tests** (`extension/src/lib/__tests__/extractExecuteCodeRequest.test.ts`, vitest — modeled on the sibling `getCellExecutableCode.test.ts`):
+- Test 1: enabled cells with stable ids are included in the execution request (sanity) — **pass**.
+- Test 2: cells without a stable id are skipped (sanity) — **pass**.
+- Test 3 (regression for #154): a cell with `metadata.options = { disabled: true }` is excluded from `codes` and `cellIds` — **failed before the fix** (`expected [...'cell-disabled'] to not include 'cell-disabled'`), **passes after**.
+- Test 4 (edge case, added with the fix): a selection containing only disabled cells returns `Option.none()` — exercises the corrected empty-request branch. Confirmed it genuinely fails when only the `return` is reverted, then passes with the fix in place.
 
-**Suite checks:** full `just test-ts` must stay green (baseline: 40 files, 429 passed / 1 skipped); `just lint` clean; one `just test-vscode` integration run as a pre-PR sanity check (no new integration test — the bug is fully exercised at the unit seam).
+**Validation performed (all local, results captured in Implementation Notes):** target file → **4 passed**; full `just test-ts` → **44 files, 462 passed / 1 skipped** (zero regressions); `just lint` (ruff + `ty` + TS check) → **clean**.
 
-**Manual testing:** the F5 end-to-end repro from Phase II, re-run after the fix — the disabled cell must show no output while the enabled cell runs.
+**Still owed (not blocking Phase III, planned for Phase IV):** one `just test-vscode` integration run as a pre-PR sanity check (no new integration test — the bug is fully exercised at the unit seam), and the F5 end-to-end manual repro re-run (disabled cell shows no output while the enabled cell runs).
 
 ### Implementation Notes
 
@@ -175,6 +175,24 @@ The fix landed on `fix-issue-154-disabled-cells` (commit `d6caf78`, rebased onto
 - `just lint` → ruff, `ty`, and the TS check (format + types + CSS variables) all clean after `just fix` normalized formatting.
 
 **Still owed before the PR (Phase IV):** the manual F5 end-to-end repro re-run (disabled cell shows no output), and confirming the maintainer's preferred layer (extension vs. server) on #154.
+
+### Code Changes
+
+**Branch:** [`fix-issue-154-disabled-cells`](https://github.com/lazizbekravshanov/marimo-lsp/tree/fix-issue-154-disabled-cells) (on my fork), rebased onto upstream `v0.13.5`.
+
+**Commits (red → green):**
+- `c903fc7` — *test: add failing regression test for #154 (disabled cells are sent for execution)* — the deliberately-failing test that documents the bug.
+- `d6caf78` — *fix: skip disabled cells when building execute-cells request (#154)* — the fix plus the only-disabled edge-case test.
+
+**Diff scope (3 files, ~30 lines):** `extension/src/schemas/MarimoNotebookDocument.ts` (+`isDisabled` getter), `extension/src/lib/extractExecuteCodeRequest.ts` (skip + `return` fix), `extension/src/lib/__tests__/extractExecuteCodeRequest.test.ts` (+1 test). No unrelated changes, no debug code, formatting normalized by `just fix`.
+
+> Note: I keep `fix:`-prefixed commit messages on the branch for clarity, but the repo squash-merges with a plain descriptive title — so the eventual PR title will read like *"Skip cells marked disabled when building the execute-cells request (#154)"* to match its convention.
+
+### Challenges Faced
+
+- **The fix surfaced a second, latent bug.** Filtering disabled cells made the long-dormant empty-request branch reachable: `if (codes.length === 0) { Option.none() }` never `return`ed, so a selection of only-disabled cells would have fallen through to an empty `execute-cells` request instead of stopping. Caught it by reasoning about the new control flow, then proved it with a dedicated test (reverting just the `return` to watch it fail) rather than assuming.
+- **Keeping current with a fast-moving repo.** Upstream advanced from `v0.13.4` to `v0.13.5` (and the test suite grew 40→44 files) between Phase II and Phase III. Before re-verifying, I checked that `.marimo-version` (still `0.23.9`, so the sibling checkout stays valid) and both target files were untouched upstream, then rebased cleanly — avoiding a stale baseline.
+- **AI usage stayed reviewer-defensible.** I can explain every line without referencing tool output: the getter mirrors the existing `isStale` pattern, and the `metadata.options.disabled` read was verified against the LSP's own deserialize wire format in Phase II, not guessed.
 
 ---
 

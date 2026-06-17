@@ -163,7 +163,7 @@ The strategy was defined in Phase II (a regression test written first, failing b
 
 ### Implementation Notes
 
-The fix landed on `fix-issue-154-disabled-cells` (commit `d6caf78`, rebased onto upstream `v0.13.5`), exactly as the Phase II plan specified. Three files:
+The fix landed on `fix-issue-154-disabled-cells` (commit `c769c4b`, rebased onto upstream `v0.13.5`), exactly as the Phase II plan specified. Three files:
 
 1. **`extension/src/schemas/MarimoNotebookDocument.ts`** — added an `isDisabled` getter on `MarimoNotebookCell` that reads `metadata.options?.disabled === true` (defaults to `false`), mirroring the existing `isStale` getter's `Option.map(...).getOrElse(() => false)` shape. No schema change — `CellMetadata` already models `options` as `Record<string, unknown>`.
 2. **`extension/src/lib/extractExecuteCodeRequest.ts`** — added `if (cell.isDisabled) continue;` to the build loop. This single choke point feeds both execution paths (`NotebookControllerFactory.ts`, `SandboxController.ts`), so both are fixed at once.
@@ -184,7 +184,7 @@ The fix landed on `fix-issue-154-disabled-cells` (commit `d6caf78`, rebased onto
 
 **Commits (red → green):**
 - `c903fc7` — *test: add failing regression test for #154 (disabled cells are sent for execution)* — the deliberately-failing test that documents the bug.
-- `d6caf78` — *fix: skip disabled cells when building execute-cells request (#154)* — the fix plus the only-disabled edge-case test.
+- `c769c4b` — *fix: skip disabled cells when building execute-cells request (#154)* — the fix plus the only-disabled edge-case test.
 
 **Diff scope (3 files, ~30 lines):** `extension/src/schemas/MarimoNotebookDocument.ts` (+`isDisabled` getter), `extension/src/lib/extractExecuteCodeRequest.ts` (skip + `return` fix), `extension/src/lib/__tests__/extractExecuteCodeRequest.test.ts` (+1 test). No unrelated changes, no debug code, formatting normalized by `just fix`.
 

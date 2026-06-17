@@ -163,7 +163,7 @@ The strategy was defined in Phase II (a regression test written first, failing b
 
 ### Implementation Notes
 
-The fix landed on `fix-issue-154-disabled-cells` (commit `c769c4b`, rebased onto upstream `v0.13.5`), exactly as the Phase II plan specified. Three files:
+The fix landed on `fix-issue-154-disabled-cells` (a single atomic commit `f63bc4e`, rebased onto upstream `v0.13.5`), exactly as the Phase II plan specified. Three files:
 
 1. **`extension/src/schemas/MarimoNotebookDocument.ts`** — added an `isDisabled` getter on `MarimoNotebookCell` that reads `metadata.options?.disabled === true` (defaults to `false`), mirroring the existing `isStale` getter's `Option.map(...).getOrElse(() => false)` shape. No schema change — `CellMetadata` already models `options` as `Record<string, unknown>`.
 2. **`extension/src/lib/extractExecuteCodeRequest.ts`** — added `if (cell.isDisabled) continue;` to the build loop. This single choke point feeds both execution paths (`NotebookControllerFactory.ts`, `SandboxController.ts`), so both are fixed at once.
@@ -182,13 +182,15 @@ The fix landed on `fix-issue-154-disabled-cells` (commit `c769c4b`, rebased onto
 
 **Branch:** [`fix-issue-154-disabled-cells`](https://github.com/lazizbekravshanov/marimo-lsp/tree/fix-issue-154-disabled-cells) (on my fork), rebased onto upstream `v0.13.5`.
 
-**Commits (red → green):**
-- `c903fc7` — *test: add failing regression test for #154 (disabled cells are sent for execution)* — the deliberately-failing test that documents the bug.
-- `c769c4b` — *fix: skip disabled cells when building execute-cells request (#154)* — the fix plus the only-disabled edge-case test.
+**One atomic commit** (`f63bc4e`):
 
-**Diff scope (3 files, ~30 lines):** `extension/src/schemas/MarimoNotebookDocument.ts` (+`isDisabled` getter), `extension/src/lib/extractExecuteCodeRequest.ts` (skip + `return` fix), `extension/src/lib/__tests__/extractExecuteCodeRequest.test.ts` (+1 test). No unrelated changes, no debug code, formatting normalized by `just fix`.
+> `fix(extension): skip cells marked disabled when building the execute-cells request`
 
-> Note: I keep `fix:`-prefixed commit messages on the branch for clarity, but the repo squash-merges with a plain descriptive title — so the eventual PR title will read like *"Skip cells marked disabled when building the execute-cells request (#154)"* to match its convention.
+**Diff scope (3 files, ~40 lines):** `extension/src/schemas/MarimoNotebookDocument.ts` (+`isDisabled` getter), `extension/src/lib/extractExecuteCodeRequest.ts` (skip + `return` fix), `extension/src/lib/__tests__/extractExecuteCodeRequest.test.ts` (+2 tests). No unrelated changes, no debug code, formatting normalized by `just fix`.
+
+**Why one commit, not two (atomic-commit discipline).** I initially split this as *test (red)* → *fix (green)* to mirror the TDD process. But an atomic commit must leave the tree in a **working state** so it can be applied or reverted independently — and a standalone failing-test commit leaves the build red, which breaks that property. So the two were squashed into a single commit that carries the test **and** the fix together: the tree is green at every point in history, and the change is revertible as one unit. The red→green TDD story still lives where it belongs — in these notes and the PR description — rather than in committed history. The message follows [Conventional Commits](https://www.conventionalcommits.org/) (`fix` type, `extension` scope, `Closes #154` footer).
+
+> Note on the PR title vs. the commit: marimo-lsp **squash-merges** with a plain descriptive title (no PR template, and merged history shows titles like *"Linkify file paths in cell tracebacks (#572)"*), so the PR is titled *"Skip cells marked disabled when building the execute-cells request (#154)"* to match the project's actual convention — while the branch commit uses Conventional Commits as a good local-history practice. Matching the project's real convention for what merges is itself part of the lesson.
 
 ### Challenges Faced
 

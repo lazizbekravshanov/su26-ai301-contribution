@@ -1,0 +1,44 @@
+#!/bin/sh
+#
+# Conventional Commits enforcement (dependency-free).
+# Rejects a commit whose subject line does not follow:
+#
+#   <type>[optional scope][!]: <description>
+#
+# Reference: https://www.conventionalcommits.org/
+# Enable in a fresh clone with:  git config core.hooksPath .githooks
+
+msg_file="$1"
+
+# First non-comment, non-blank line is the subject.
+subject="$(grep -v '^#' "$msg_file" | sed '/^[[:space:]]*$/d' | head -n 1)"
+
+# Allow git's own auto-generated messages (merge / revert / fixup / squash).
+case "$subject" in
+  "Merge "*|"Revert "*|"fixup! "*|"squash! "*|"Reapply "*)
+    exit 0
+    ;;
+esac
+
+types='feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert'
+
+# Subject must be: type, optional (scope), optional !, ": ", then a description.
+if printf '%s' "$subject" | grep -Eq "^(${types})(\([a-z0-9 ._/-]+\))?!?: .+"; then
+  # Soft warning on overlong subjects (does not block the commit).
+  len=$(printf '%s' "$subject" | wc -c | tr -d ' ')
+  if [ "$len" -gt 72 ]; then
+    printf '\033[33mwarning:\033[0m commit subject is %s chars (> 72 recommended):\n  %s\n' "$len" "$subject" >&2
+  fi
+  exit 0
+fi
+
+# Failure: explain and reject.
+printf '\033[31mInvalid commit message.\033[0m It must follow Conventional Commits:\n\n' >&2
+printf '  <type>[optional scope][!]: <description>\n\n' >&2
+printf '  types: feat, fix, docs, style, refactor, perf, test, build, ci, chore, revert\n\n' >&2
+printf 'Your subject was:\n  %s\n\n' "$subject" >&2
+printf 'Examples:\n' >&2
+printf '  docs: record Phase III implementation notes\n' >&2
+printf '  fix(extension): skip cells marked disabled\n' >&2
+printf '  chore!: drop support for the old config format\n' >&2
+exit 1

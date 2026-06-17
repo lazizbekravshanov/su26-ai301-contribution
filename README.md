@@ -161,7 +161,20 @@ Defined in Phase II (the regression test already exists on the working branch an
 
 ### Implementation Notes
 
-*To be completed in Phase III (fix lands on the `fix-issue-154-disabled-cells` branch).*
+The fix landed on `fix-issue-154-disabled-cells` (commit `d6caf78`, rebased onto upstream `v0.13.5`), exactly as the Phase II plan specified. Three files:
+
+1. **`extension/src/schemas/MarimoNotebookDocument.ts`** — added an `isDisabled` getter on `MarimoNotebookCell` that reads `metadata.options?.disabled === true` (defaults to `false`), mirroring the existing `isStale` getter's `Option.map(...).getOrElse(() => false)` shape. No schema change — `CellMetadata` already models `options` as `Record<string, unknown>`.
+2. **`extension/src/lib/extractExecuteCodeRequest.ts`** — added `if (cell.isDisabled) continue;` to the build loop. This single choke point feeds both execution paths (`NotebookControllerFactory.ts`, `SandboxController.ts`), so both are fixed at once.
+3. Same file — corrected the latent empty-request bug: the `if (codes.length === 0)` branch called `Option.none()` **without returning**, falling through to `Option.some({codes: [], cellIds: []})`. Once disabled cells are filtered, a selection of only-disabled cells reaches this branch, so it now actually `return`s `Option.none()` (the controller already handles that by logging "Empty execution request" and stopping).
+
+**TDD discipline followed.** The pre-existing regression test was re-run and watched fail on current upstream code (`expected [...'cell-disabled'] to not include 'cell-disabled'`) before the fix. After the fix it flips green. I added a second case — *only-disabled selection returns `Option.none()`* — and verified it genuinely fails (by temporarily reverting just the `return`) before keeping it, so the corrected empty-request branch is actually covered rather than assumed.
+
+**Verification (all run locally, evidence captured):**
+- `just test-ts src/lib/__tests__/extractExecuteCodeRequest.test.ts` → **4 passed** (2 sanity, regression, empty-request).
+- `just test-ts` (full suite) → **44 files, 462 passed | 1 skipped** (upstream grew the suite from the v0.13.4 baseline of 40/429; zero regressions).
+- `just lint` → ruff, `ty`, and the TS check (format + types + CSS variables) all clean after `just fix` normalized formatting.
+
+**Still owed before the PR (Phase IV):** the manual F5 end-to-end repro re-run (disabled cell shows no output), and confirming the maintainer's preferred layer (extension vs. server) on #154.
 
 ---
 

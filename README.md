@@ -157,7 +157,9 @@ The strategy was defined in Phase II (a regression test written first, failing b
 
 **Validation performed (all local, results captured in Implementation Notes):** target file → **4 passed**; full `just test-ts` → **44 files, 462 passed / 1 skipped** (zero regressions); `just lint` (ruff + `ty` + TS check) → **clean**.
 
-**Still owed (not blocking Phase III, planned for Phase IV):** one `just test-vscode` integration run as a pre-PR sanity check (no new integration test — the bug is fully exercised at the unit seam), and the F5 end-to-end manual repro re-run (disabled cell shows no output while the enabled cell runs).
+**Integration sanity check:** `just test-vscode` (the slow VS Code integration suite) was run as a pre-PR sanity check and **passed** (exit 0; the only console noise was VS Code's benign listener-leak teardown diagnostics). No new integration test was added — the bug is fully exercised at the unit seam where the request is constructed.
+
+**Still owed (user-only, not blocking Phase III):** the F5 end-to-end manual repro re-run (disabled cell shows no output while the enabled cell runs) — a GUI step.
 
 ### Implementation Notes
 
@@ -174,7 +176,7 @@ The fix landed on `fix-issue-154-disabled-cells` (commit `d6caf78`, rebased onto
 - `just test-ts` (full suite) → **44 files, 462 passed | 1 skipped** (upstream grew the suite from the v0.13.4 baseline of 40/429; zero regressions).
 - `just lint` → ruff, `ty`, and the TS check (format + types + CSS variables) all clean after `just fix` normalized formatting.
 
-**Still owed before the PR (Phase IV):** the manual F5 end-to-end repro re-run (disabled cell shows no output), and confirming the maintainer's preferred layer (extension vs. server) on #154.
+**Status:** draft PR [#603](https://github.com/marimo-team/marimo-lsp/pull/603) opened (Phase IV). Remaining: the manual F5 end-to-end repro re-run (disabled cell shows no output — a user-only GUI step), and the maintainer's answer on the preferred layer (extension vs. server), which the draft PR explicitly asks for.
 
 ### Code Changes
 
@@ -198,13 +200,21 @@ The fix landed on `fix-issue-154-disabled-cells` (commit `d6caf78`, rebased onto
 
 ## Phase IV: Submit and Iterate
 
-*To be completed.*
+*In progress — draft PR opened early per the maintainer-recommended "draft PR early" workflow.*
 
 ### Pull Request
 
+**Draft PR:** [marimo-team/marimo-lsp#603 — Skip cells marked disabled when building the execute-cells request (#154)](https://github.com/marimo-team/marimo-lsp/pull/603) (opened as a **draft** so maintainers can weigh in before it's marked ready).
+
+The PR title is a plain descriptive sentence with `(#154)`, matching the repo's squash-merge convention (it has no PR template). The full description (problem → root cause → fix → tests → the open extension-vs-server layer question) is archived in [`PR_DESCRIPTION.md`](./PR_DESCRIPTION.md).
+
 ### Summary
 
+A three-file, ~30-line fix at the single choke point where the extension assembles its `execute-cells` request, plus a regression test and an edge-case test. Full unit suite green (462 passed), `just lint` clean, and `just test-vscode` integration suite green. Draft PR is live for maintainer feedback; the open question raised in the PR is whether to enforce at the extension or LSP server layer.
+
 ### Maintainer Feedback Log
+
+*Awaiting first review on #603 (opened as draft). Will log responses here.*
 
 ---
 

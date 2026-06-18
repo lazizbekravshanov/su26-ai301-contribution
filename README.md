@@ -135,8 +135,9 @@ The two passing sanity cases (enabled cells included; id-less cells skipped) iso
 
 #### Reproduction Evidence
 
-- Working branch with the failing regression test: https://github.com/lazizbekravshanov/marimo-lsp/tree/fix-issue-154-disabled-cells (commit `21986be`)
-- The committed test fails on current `main` code by design; it becomes the regression guard once the Phase III fix lands.
+- **Deterministic unit reproduction (primary evidence).** `extension/src/lib/__tests__/extractExecuteCodeRequest.test.ts` fails on the unfixed code with `expected [...'cell-disabled'] to not include 'cell-disabled'`. In Phase II this lived as a standalone failing commit (`21986be`); following atomic-commit discipline it was later rebased and squashed into the final fix commit ([`f63bc4e`](https://github.com/lazizbekravshanov/marimo-lsp/tree/fix-issue-154-disabled-cells)), where the test now passes. To re-observe the failure on current code, revert the four-line `isDisabled` skip in `extractExecuteCodeRequest.ts` and re-run the test.
+- **Manual end-to-end:** the F5 repro above — observed result pending (the one user-only GUI step still outstanding).
+- The same test doubles as the **regression guard** that keeps #154 from recurring.
 
 ### Solution Approach
 
@@ -167,9 +168,23 @@ Skip disabled cells inside `extractExecuteCodeRequest`'s loop, exposed through a
 
 **Evaluate:** the regression test flips to green with the fix; full `just test-ts` stays green (baseline: 40 files, 429 passed / 1 skipped); the manual F5 repro shows the disabled cell skipped. Integration suite (`just test-vscode`): run once before opening the PR as a sanity check, but no new integration test — the bug and fix are fully exercised at the unit seam where the request is constructed.
 
+### Phase II Outcome
+
+Phase II met three success criteria before any production code was written:
+
+1. **Reproduced** — a deterministic unit test fails on the unfixed code (manual F5 confirmation pending).
+2. **Root cause identified with evidence** — narrowed to a single function, with the `options.disabled` wire format *proven* by running the LSP deserialize path rather than inferred from the schema.
+3. **Concrete, reviewable plan** — the UMPIRE plan above, with explicit acceptance criteria, the one-place fix justified over per-call-site filtering, and the open extension-vs-server question surfaced to the maintainer.
+
 ---
 
 ## Phase III: Build
+
+### Progress Log
+
+- **Jun 10 (Phase II):** reproduced the bug with a failing regression test; drafted the UMPIRE plan; claimed the issue.
+- **Jun 17:** rebased the branch onto upstream `v0.13.5` (confirmed `.marimo-version` and both target files unchanged first); implemented the `isDisabled` getter, the skip, and the empty-request `return` fix; full unit suite green (462 passed / 1 skipped) and `just lint` clean; ran `just test-vscode` (passed); squashed to one atomic Conventional-Commits commit; opened draft PR #603.
+- **Jun 18:** hardened the journal against the rubric (Definition of Done, evaluated-issues comparison, self-review checklist, this log) and added a Conventional-Commits `commit-msg` hook to the journal repo.
 
 ### Testing Strategy
 
@@ -223,6 +238,18 @@ The fix landed on `fix-issue-154-disabled-cells` (a single atomic commit `f63bc4
 - **The fix surfaced a second, latent bug.** Filtering disabled cells made the long-dormant empty-request branch reachable: `if (codes.length === 0) { Option.none() }` never `return`ed, so a selection of only-disabled cells would have fallen through to an empty `execute-cells` request instead of stopping. Caught it by reasoning about the new control flow, then proved it with a dedicated test (reverting just the `return` to watch it fail) rather than assuming.
 - **Keeping current with a fast-moving repo.** Upstream advanced from `v0.13.4` to `v0.13.5` (and the test suite grew 40→44 files) between Phase II and Phase III. Before re-verifying, I checked that `.marimo-version` (still `0.23.9`, so the sibling checkout stays valid) and both target files were untouched upstream, then rebased cleanly — avoiding a stale baseline.
 - **AI usage stayed reviewer-defensible.** I can explain every line without referencing tool output: the getter mirrors the existing `isStale` pattern, and the `metadata.options.disabled` read was verified against the LSP's own deserialize wire format in Phase II, not guessed.
+
+### Self-Review Checklist (pre-submission)
+
+Ran the Phase III pre-submission checklist before marking the phase complete:
+
+- [x] **Code change works** — disabled cells are excluded from the execution request, verified by the regression test (manual F5 confirmation pending).
+- [x] **Tests pass** — new tests green; full `just test-ts` 462 passed / 1 skipped; `just test-vscode` integration suite green.
+- [x] **Style compliance** — `just lint` (ruff + `ty` + TS format/type/CSS checks) clean; repo pre-commit hooks installed.
+- [x] **No unnecessary changes** — diff is 3 files / ~40 lines scoped to #154; no debug code, no unrelated formatting.
+- [x] **Commit history clean** — one atomic, Conventional-Commits commit, with the tree green at that commit.
+- [x] **README updated** — implementation summary, branch link, and testing notes all present.
+- [ ] **Manual F5 end-to-end** — pending (user-only GUI step; the deterministic unit reproduction stands as primary evidence).
 
 ---
 

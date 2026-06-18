@@ -123,6 +123,8 @@ Tests  1 failed | 2 passed (3)
 
 The two passing sanity cases (enabled cells included; id-less cells skipped) isolate the failure to exactly the missing disabled check.
 
+> These steps capture the **Phase II state**, when the branch held only the failing test. The branch now carries the squashed fix (`f63bc4e`), so a fresh checkout shows all tests **passing** — to re-observe the failure on current code, revert the four-line `isDisabled` skip (see *Reproduction Evidence* below).
+
 **B. Manual end-to-end reproduction (user-facing).**
 
 1. `cd ~/pet/marimo-lsp && code .`
@@ -162,7 +164,7 @@ Skip disabled cells inside `extractExecuteCodeRequest`'s loop, exposed through a
 4. Files touched: `extractExecuteCodeRequest.ts`, `MarimoNotebookDocument.ts`, plus the already-committed test file.
 5. Open question posted on #154 (no maintainer reply yet): enforce at the extension layer or the LSP server layer. Recommendation: extension layer — it is where the request is assembled, and the maintainer framed this as a missing extension feature. If the maintainer prefers the server layer, the regression test still stands and the plan adapts.
 
-**Implement:** branch https://github.com/lazizbekravshanov/marimo-lsp/tree/fix-issue-154-disabled-cells (currently test-only; the fix lands in Phase III).
+**Implement:** branch https://github.com/lazizbekravshanov/marimo-lsp/tree/fix-issue-154-disabled-cells (test-only at plan time; the fix landed in Phase III — see Implementation Notes).
 
 **Review:** run `just fix` and `just lint` before committing; install hooks with `uvx pre-commit install`; clear commit message; PR description links #154; per the repo's stated philosophy, no lint/type opt-outs.
 
@@ -204,7 +206,7 @@ The strategy was defined in Phase II (a regression test written first, failing b
 
 ### Implementation Notes
 
-The fix landed on `fix-issue-154-disabled-cells` (a single atomic commit `f63bc4e`, rebased onto upstream `v0.13.5`), exactly as the Phase II plan specified. Three files:
+The fix landed on `fix-issue-154-disabled-cells` (a single atomic commit `f63bc4e`, rebased onto upstream `v0.13.5`), exactly as the Phase II plan specified. Three files changed — two source files (changes below) plus the regression test:
 
 1. **`extension/src/schemas/MarimoNotebookDocument.ts`** — added an `isDisabled` getter on `MarimoNotebookCell` that reads `metadata.options?.disabled === true` (defaults to `false`), mirroring the existing `isStale` getter's `Option.map(...).getOrElse(() => false)` shape. No schema change — `CellMetadata` already models `options` as `Record<string, unknown>`.
 2. **`extension/src/lib/extractExecuteCodeRequest.ts`** — added `if (cell.isDisabled) continue;` to the build loop. This single choke point feeds both execution paths (`NotebookControllerFactory.ts`, `SandboxController.ts`), so both are fixed at once.
@@ -265,7 +267,7 @@ The PR title is a plain descriptive sentence with `(#154)`, matching the repo's 
 
 ### Summary
 
-A three-file, ~30-line fix at the single choke point where the extension assembles its `execute-cells` request, plus a regression test and an edge-case test. Full unit suite green (462 passed), `just lint` clean, and `just test-vscode` integration suite green. Draft PR is live for maintainer feedback; the open question raised in the PR is whether to enforce at the extension or LSP server layer.
+A three-file, ~40-line fix at the single choke point where the extension assembles its `execute-cells` request, plus a regression test and an edge-case test. Full unit suite green (462 passed), `just lint` clean, and `just test-vscode` integration suite green. Draft PR is live for maintainer feedback; the open question raised in the PR is whether to enforce at the extension or LSP server layer.
 
 ### Maintainer Feedback Log
 

@@ -27,6 +27,20 @@ Labels: `bug`, `good first issue`
 
 Cells marked `@app.cell(disabled=True)` execute anyway when run from the VS Code extension, while marimo's own frontend respects the flag. The core maintainer confirmed disabled cells "aren't currently supported" in the extension, called the fix achievable, added it to the roadmap, and explicitly wrote "we'd welcome a contribution." I verified before claiming it: no assignee, no linked pull requests, and the repository is exceptionally responsive — PRs were merged the same day I checked, and maintainers replied to recent issues within minutes to a few hours.
 
+### Definition of Done
+
+A clear, testable bar for "fixed," set before writing any code:
+
+- The extension **excludes** cells marked `@app.cell(disabled=True)` from execution, matching the behavior of marimo's own frontend.
+- A **regression test** fails on the current code and passes with the fix.
+- The **full `just test-ts` suite stays green** (no regressions) and `just lint` is clean.
+- A **manual F5 end-to-end check** shows the disabled cell produces no output while enabled cells run.
+- A **pull request linked to #154** is opened, reviewed, and (target) merged.
+
+### How This Contribution Aligns With My Goals
+
+I deliberately chose an issue in a **dual-stack (Python + TypeScript)** codebase rather than a single-file change. My goal this program is to get real experience (1) reading and navigating a large unfamiliar codebase, (2) working with editor-integration architecture — tracing a user-visible bug across the VS Code notebook protocol, a `pygls` LSP server, and the marimo kernel — and (3) running the full open-source contribution workflow end to end: claiming an issue, communicating with maintainers, writing a regression test, and iterating on a PR. #154 exercises all three while staying scoped to a few weeks. *(I should confirm this reflects my actual learning goals before submitting.)*
+
 ### Issue Selection Checklist Notes
 
 I ran this issue through the Phase I selection checklist. My notes:
@@ -39,6 +53,18 @@ I ran this issue through the Phase I selection checklist. My notes:
 6. **Clear setup documentation.** `CONTRIBUTING.md` gives a quick start (open in VS Code, press F5), the exact tooling (`uv`, `pnpm`, `just`), a pinned `.marimo-version` for the side-by-side marimo checkout, and `just lint` / `just test` commands. marimo also runs an active Discord community for contributor questions.
 
 All six checks passed.
+
+### Other Issues I Evaluated
+
+#154 was not my first candidate. Before settling on it, I screened issues in other repositories and rejected them — which taught me a Phase I lesson I now apply first: **check assignees and linked PRs before investing in repo analysis.**
+
+| Candidate | Why I passed on it |
+|---|---|
+| apache/burr #138 | Already effectively claimed / had an open PR |
+| Several pytorch/ao issues | Claimed or already had open PRs |
+| Several Daft issues | Claimed or already had open PRs |
+
+By contrast, marimo-lsp #154 had no assignee, no linked PR, and no competing claim comments, plus a maintainer who had explicitly welcomed a contribution. I also catalogued **backup issues within marimo-lsp itself** (#581, #351, #491, #531; #591 parked as harder) in [`bug-archive.md`](./bug-archive.md), code-verified locally, so a second contribution is ready to start without re-doing discovery.
 
 ### Risks I Noted
 

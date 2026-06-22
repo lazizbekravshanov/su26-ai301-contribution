@@ -39,7 +39,13 @@ A clear, testable bar for "fixed," set before writing any code:
 
 ### How This Contribution Aligns With My Goals
 
-I deliberately chose an issue in a **dual-stack (Python + TypeScript)** codebase rather than a single-file change. My goal this program is to get real experience (1) reading and navigating a large unfamiliar codebase, (2) working with editor-integration architecture — tracing a user-visible bug across the VS Code notebook protocol, a `pygls` LSP server, and the marimo kernel — and (3) running the full open-source contribution workflow end to end: claiming an issue, communicating with maintainers, writing a regression test, and iterating on a PR. #154 exercises all three while staying scoped to a few weeks. *(I should confirm this reflects my actual learning goals before submitting.)*
+My objectives for this practicum are threefold, and I selected #154 specifically to exercise all three:
+
+1. **Maintainer communication.** Practicing clear, technical written collaboration with project owners: a concise claim comment, a root-cause-first pull request description, and explicitly surfacing an open design decision (enforcement at the extension layer vs. the LSP server layer) for maintainer input rather than resolving it unilaterally.
+2. **Technical depth.** Strengthening my ability to read and reason about an unfamiliar, multi-runtime system — tracing a user-visible defect across the VS Code notebook protocol, a `pygls`-based LSP server, and the marimo kernel — and validating behavior by executing the relevant code paths rather than inferring them.
+3. **End-to-end open-source workflow.** Completing a contribution in full: issue selection and claiming, reproduction backed by a regression test, atomic commits under the project's conventions, and iteration on review feedback.
+
+I deliberately chose a dual-stack (Python + TypeScript) issue over a single-file change so the work would stretch all three objectives while remaining scoped to the program's timeframe.
 
 ### Issue Selection Checklist Notes
 
@@ -270,6 +276,16 @@ Before marking it ready I ran a senior-reviewer pre-submission audit: walked the
 A three-file, ~40-line fix at the single choke point where the extension assembles its `execute-cells` request, plus a regression test and an empty-request edge-case test. Verified green on the rebased branch: `just test-ts` 466 passed / 1 skipped, `just lint` clean, `just test-vscode` integration suite passing, and a manual F5 end-to-end check (disabled cell shows no output). The one open question raised in the PR is whether to enforce at the extension layer (where the fix sits) or the LSP server layer.
 
 **Status:** Awaiting review.
+
+### Design Note — Why the Extension Layer (verified against the kernel)
+
+The open question on the PR is whether to enforce `disabled` at the extension or the LSP-server/kernel layer. Rather than guess, I traced it through marimo's runtime:
+
+- **Reactive execution is already safe kernel-side.** When an upstream cell runs, marimo's cell runner skips any scheduled descendant whose `config.disabled` is set — or that is transitively disabled through a disabled ancestor (`marimo/_runtime/runner/cell_runner.py`, `DirectedGraph.is_disabled`). So a disabled *downstream* cell is never re-run by the kernel, and the extension is not involved in that path.
+- **The gap is the explicit run-request path.** The extension's "Run"/"Run All" assembles an `execute-cells` request that the server forwards verbatim as a control request (`src/marimo_lsp/api.py` `run` → `put_control_request`). That explicit request was honored as-is — which is exactly the reported bug (reproduced; confirmed via F5 that a manual Run executed the disabled cell before the fix).
+- **Therefore the extension is the correct, minimal layer.** `extractExecuteCodeRequest` is where that explicit request is built, so excluding disabled cells there fixes #154 without touching the kernel's already-correct reactive behavior.
+
+Conclusion: the fix is **complete** for #154 — there is no reactive path that re-runs a disabled cell, and the manual path is now filtered. This analysis is also my prepared answer if the maintainer asks why not the server layer: the kernel already guards reactive runs; only the explicit run-request path (which originates in the extension) needed the guard.
 
 ### Maintainer Feedback Log
 

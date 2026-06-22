@@ -2,7 +2,7 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status:** Phase III Submitted (2026-06-18) · Phase IV in progress
+**Status:** Phase III Submitted · Phase IV — PR #603 ready for review (2026-06-22)
 
 ---
 
@@ -133,7 +133,7 @@ The two passing sanity cases (enabled cells included; id-less cells skipped) iso
 4. Open it as a marimo notebook, pick a Python environment, and **Run All**.
 5. Expected: the disabled cell is skipped (no output). Actual: it prints `RAN — bug if you see this`.
 
-*Observed result:* **[placeholder — paste output/screenshot after running the F5 repro]**
+*Observed result (2026-06-22, with the fix applied):* the disabled cell produces **no output** while the `x = 1` cell runs normally — matching marimo's own frontend. Verified in the Extension Development Host via F5.
 
 #### Reproduction Evidence
 
@@ -251,27 +251,29 @@ Ran the Phase III pre-submission checklist before marking the phase complete:
 - [x] **No unnecessary changes** — diff is 3 files / ~40 lines scoped to #154; no debug code, no unrelated formatting.
 - [x] **Commit history clean** — one atomic, Conventional-Commits commit, with the tree green at that commit.
 - [x] **README updated** — implementation summary, branch link, and testing notes all present.
-- [ ] **Manual F5 end-to-end** — pending (user-only GUI step; the deterministic unit reproduction stands as primary evidence).
+- [x] **Manual F5 end-to-end** — verified (2026-06-22): the disabled cell produces no output while the enabled cell runs.
 
 ---
 
 ## Phase IV: Submit and Iterate
 
-*In progress — draft PR opened early per the maintainer-recommended "draft PR early" workflow.*
+*PR opened early as a draft, then marked **ready for review** once tests, lint, and the manual F5 check were all green.*
 
 ### Pull Request
 
-**Draft PR:** [marimo-team/marimo-lsp#603 — Skip cells marked disabled when building the execute-cells request (#154)](https://github.com/marimo-team/marimo-lsp/pull/603) (opened as a **draft** so maintainers can weigh in before it's marked ready).
+**PR:** [marimo-team/marimo-lsp#603 — Skip cells marked disabled when building the execute-cells request (#154)](https://github.com/marimo-team/marimo-lsp/pull/603) — **ready for review** (2026-06-22).
 
-The PR title is a plain descriptive sentence with `(#154)`, matching the repo's squash-merge convention (it has no PR template). The full description (problem → root cause → fix → tests → the open extension-vs-server layer question) is archived in [`PR_DESCRIPTION.md`](./PR_DESCRIPTION.md).
+Before marking it ready I ran a senior-reviewer pre-submission audit: walked the full diff (3 files, scoped to #154, no debris), rebased onto current `upstream/main` (clean — resolved a post-rebase oxlint dependency-staleness error that was environmental, not in the diff), re-verified all suites, and **corrected a maintainer misattribution** (the triage was by **@manzt**, the sole `CODEOWNER`, not @mscolnick). The PR title is a plain descriptive sentence with `(#154)`, matching the repo's squash-merge convention (it has no PR template). The full description (why → root cause → what → evidence → the open extension-vs-server layer question) is archived in [`PR_DESCRIPTION.md`](./PR_DESCRIPTION.md).
 
 ### Summary
 
-A three-file, ~40-line fix at the single choke point where the extension assembles its `execute-cells` request, plus a regression test and an edge-case test. Full unit suite green (462 passed), `just lint` clean, and `just test-vscode` integration suite green. Draft PR is live for maintainer feedback; the open question raised in the PR is whether to enforce at the extension or LSP server layer.
+A three-file, ~40-line fix at the single choke point where the extension assembles its `execute-cells` request, plus a regression test and an empty-request edge-case test. Verified green on the rebased branch: `just test-ts` 466 passed / 1 skipped, `just lint` clean, `just test-vscode` integration suite passing, and a manual F5 end-to-end check (disabled cell shows no output). The one open question raised in the PR is whether to enforce at the extension layer (where the fix sits) or the LSP server layer.
+
+**Status:** Awaiting review.
 
 ### Maintainer Feedback Log
 
-*Awaiting first review on #603 (opened as draft). Will log responses here.*
+*2026-06-22 — PR #603 marked ready for review; requested review from @manzt (sole CODEOWNER and #154 triager) with a first-contribution comment surfacing the extension-vs-server layer question. No response yet; responses logged here as they arrive.*
 
 ---
 

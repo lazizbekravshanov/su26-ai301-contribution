@@ -302,18 +302,26 @@ Conclusion: the fix is **complete** for #154 — there is no reactive path that 
 - pnpm `link:` workspace dependencies and why a package's tests can require a sibling repository checkout (and its own installed workspace) to even import.
 - Effect-TS testing patterns (`it.effect`, `Effect.gen`, layered `Constants` providers) and writing a regression test that documents a bug before fixing it.
 - Evidence-first debugging: running the LSP server's own deserialize path to prove the wire format of `disabled=True` (`options: {"disabled": true}`) instead of guessing from the schema.
+- Git history as a deliverable: atomic commits (squashing a red-test + green-fix pair into one commit so the tree is green at every point), Conventional Commits, and enforcing the format with a `commit-msg` hook.
+- Reading a reactive runtime end to end: tracing marimo's kernel to confirm it skips disabled cells during *reactive* scheduling (`cell_runner.py`, `graph.is_disabled`) while *explicit* run requests are honored as-is — which pinpointed why the extension layer is the correct place for the fix.
 
 ### Challenges Overcome
 
 - The baseline test suite failed twice on a clean checkout (missing `@marimo-team/smart-cells` link target, then missing marimo workspace dependencies). Diagnosed from the error chain (`Cannot find package` → `link:../../marimo/...` in package.json → `Tsconfig not found` → workspace `pnpm install`) rather than trial-and-error.
 - Choosing an issue that was genuinely available: my first two candidate issues (apache/burr #138, then several pytorch/ao and Daft issues) turned out to be claimed or already have open PRs — I learned to check assignees, linked PRs, *and* recent commenters before claiming.
+- A post-rebase `just lint` failure (`oxlint: rule 'no-underscore-dangle' not found`) looked like a code problem but was a stale dependency after upstream bumped a package; diagnosed it as environmental (config parsed before analysis, no diff touched it) and fixed it with a reinstall rather than chasing the wrong thing.
+- A pre-submission self-review caught a maintainer **misattribution** in my own PR draft (I credited the wrong maintainer) before it went public — a reminder that AI-assisted drafts need fact-checking against the source.
 
 ### What I'd Do Differently Next Time
 
 - Check the issue sheet's "Claimed?" column and linked PRs *first*, before investing in repo analysis.
 - Read `CONTRIBUTING.md` for sibling-checkout requirements before running the test suite, not after it fails.
+- Verify the maintainer's identity directly from the issue thread before drafting PR text, instead of fixing it in review.
+- Keep the branch continuously rebased on upstream so the final stretch isn't a surprise rebase + dependency reinstall.
 
-*To be extended after Phases III–IV.*
+### Outcome
+
+PR #603 was **approved and merged by the maintainer on the first review pass** (2026-06-24), closing #154. The throughline across all four phases: *evidence beats assertion* — a failing-then-passing regression test, a wire format proven by execution, a diff audited line by line, and a fix validated against the kernel's own enforcement. The maintainer also invited a follow-up (surfacing the disabled state in the UI and allowing enable/disable), a natural next contribution.
 
 ---
 
@@ -335,3 +343,7 @@ I am responsible for every line in my pull request. This table logs how I used A
 |---|---|---|---|
 | 2026-06-10 | Claude | Scoring candidate repositories from the course issue list for maintainer responsiveness (time-to-first-reply, merge cadence) and screening issues for existing claims, assignees, and linked PRs | I read issue #154 and the maintainer's comment, `CONTRIBUTING.md`, and `ARCHITECTURE.md` directly to confirm scope, setup steps, and that no assignee or pull request exists |
 | 2026-06-10 | Claude Code | Phase II: setting up the dev environment (debugging the side-by-side marimo checkout requirement), tracing the execution code path, confirming the `options.disabled` wire format by running the LSP deserialize path, writing the failing regression test, and drafting the UMPIRE plan | I reviewed every quoted file (`extractExecuteCodeRequest.ts`, both call sites, `CellMetadata.ts`, `MarimoNotebookDocument.ts`, `NotebookSerializer.ts`, `api.py`) and ran the baseline suite and the regression test myself (twice) to confirm the green baseline and the consistent failure |
+| 2026-06-17 | Claude Code | Phase III: implementing the `isDisabled` getter, the loop skip, and the empty-request `return` fix; running the test/lint suites; squashing into one atomic Conventional-Commits commit; opening the draft PR | I confirmed the regression test went red→green, reviewed the final 3-file diff, and saw the full `just test-ts` + `just lint` results; I made the calls on pushing and on the single-commit structure |
+| 2026-06-22 | Claude Code | Phase IV pre-submission audit (walking the diff, checking conventions/CODEOWNERS, rebase-risk), rebasing onto upstream, rewriting the PR description, marking the PR ready, and drafting the reviewer comment | I ran the manual F5 end-to-end check myself (the disabled cell produced no output), read the PR description before it went public, and approved each outward action (rebase, mark-ready, comment) |
+| 2026-06-24 | Claude Code | Tracing marimo's kernel to verify the fix is complete (reactive vs. explicit execution of disabled cells) and recording the merge | I read the maintainer's review and confirmed on GitHub that PR #603 was approved and merged (squash `619188e`) |
+| 2026-06-28 | Claude Code | Completing the journal — the Learnings & Reflections section and this AI usage log | I reviewed and edited these entries for accuracy and ownership |

@@ -40,3 +40,7 @@ Excluded after triage: #532 (maintainer already fixing), #353 (open PR #464), #5
 ---
 
 **Plan:** finish #154 (fix + PR) first; then #581 is the recommended contribution #2 (maintainer-blessed, smallest, analysis ready).
+
+---
+
+**Update 2026-07-01 (Cycle 2 selection):** #154 done (PR #603 merged 2026-06-24). **#581 selected as Cycle 2** — re-verified today: still open, unassigned, zero cross-referenced PRs (checked #581/#351/#491/#531 timelines); the four raw-UUID branches in `errors.ts` are unchanged on upstream `main` (`157ab4a`). Caveat: `ExecutionRegistry.ts` was heavily refactored (~400 lines) since the June analysis — re-map the `cellIdMapper` call sites in Phase II. New candidate for Cycle 3: @manzt's invited follow-up from PR #603 (surface disabled state in UI + enable/disable commands) — no issue filed yet.

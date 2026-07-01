@@ -2,7 +2,7 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status:** Phase IV Complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24)
+**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 Phase I — issue #581 selected (2026-07-01)
 
 ---
 
@@ -294,6 +294,73 @@ Conclusion: the fix is **complete** for #154 — there is no reactive path that 
 
 ---
 
+# Cycle 2
+
+*Cycle 1 (#154 → PR #603) merged 2026-06-24; everything above documents it. Cycle 2 starts Week 5 with a second contribution to the same project.*
+
+## Cycle 2 — Phase I: Issue Selection
+
+### Issue
+
+[marimo-team/marimo-lsp #581: Error message using unclear cell identifier instead of cell number](https://github.com/marimo-team/marimo-lsp/issues/581)
+
+Labels: `bug`
+
+### Why I Chose This Issue
+
+When a cell fails because an ancestor raised an exception, the extension's error message identifies the culprit by raw kernel UUID — `(raised in cell: 918d2406-014b-4a20-9c9a-ba8cb7ab2ba2)` — which is meaningless to a user who knows cells by number. marimo core maintainer @mscolnick confirmed the direction on the issue: *"Yes this is something we can fix with a hyperlink."*
+
+I had already root-caused this during Cycle 1's candidate screening ([`bug-archive.md`](./bug-archive.md), verified 2026-06-10): `prettyErrorMessage` in `extension/src/lib/errors.ts` **receives** a `cellIdMapper` — the same mapper that already renders clickable `cell-N` hyperlinks for multiple-definition errors — but applies it **only** in that one branch. The `exception`, `ancestor-stopped`, `ancestor-prevented`, and `strict-exception` branches interpolate the raw UUID directly. **Re-verified 2026-07-01 against upstream `main` (`157ab4a`):** the buggy branches are unchanged, and the issue is still open with no assignee, no linked PRs, and no competing claim comments (timeline cross-references checked via the GitHub API).
+
+Choosing within marimo-lsp also converts Cycle 1's setup investment — the standing dev environment, the sibling marimo checkout, the test/lint toolchain, and a working relationship with the reviewer — into pure contribution time.
+
+### Definition of Done
+
+- All four raw-UUID branches of `prettyErrorMessage` render the human-readable cell reference (the same hyperlink treatment `formatMultipleDefinitionError` already produces via `createCellNavigationLink`) whenever the mapper can resolve the id, falling back to the raw id when it cannot.
+- **Regression tests** fail on the current code for the affected branches and pass with the fix.
+- Full **`just test-ts` stays green** and `just lint` is clean.
+- A **manual F5 check** using the reporter's own two-cell notebook shows a cell reference/hyperlink in the error message instead of a UUID.
+- A **pull request linked to #581** is opened, reviewed, and (target) merged.
+
+### How This Contribution Aligns With My Goals
+
+Cycle 1 proved the end-to-end workflow; Cycle 2 shifts the emphasis:
+
+1. **Compressing issue-to-PR time.** With the environment, conventions, and codebase knowledge already in hand, the goal is a tight cycle — measured in days, not weeks — without cutting the evidence discipline (failing test first, verified root cause, audited diff).
+2. **User-facing polish.** Cycle 1 fixed silent wrong behavior; this issue is about the *communication surface* of errors — turning an opaque UUID into a navigable cell link, which exercises judgment about UX in developer tools, not just correctness.
+3. **Sustaining a maintainer relationship.** A second merged PR to the same project builds a track record with the same reviewer (@manzt), while @manzt's invited follow-up from PR #603 (disabled-cell UI) stays scoped as a Cycle 3 candidate.
+
+### Issue Selection Checklist Notes
+
+1. **I understand the problem.** In one sentence: error messages show the raising cell's raw kernel UUID instead of the cell number/link users actually see. "Fixed" looks like: every error branch resolves the UUID through the already-available `cellIdMapper`, with tests covering each branch.
+2. **Scope fits the time available.** The core change is confined to one file's formatting branches plus tests — the smallest item on my verified bench, appropriate for a Week 5 start.
+3. **Matches my skills.** TypeScript, in the same `extension/src/lib/` area as Cycle 1, using the same vitest/Effect-TS test idioms I learned there.
+4. **Active and claimable.** Verified 2026-07-01: open, no assignee, no linked PRs (issue timeline checked), only comment is the maintainer's endorsement.
+5. **Helpful context.** The reporter provided an exact reproduction notebook; the maintainer endorsed the hyperlink approach; my own June root-cause analysis is on file and re-verified; the target rendering helper (`createCellNavigationLink`) already exists.
+6. **Setup documented — and already done.** The Cycle 1 environment (fork, sibling marimo checkout at the pinned version, `uv`/`pnpm`/`just` toolchain) is standing and was exercised as recently as the Cycle 1 rebase.
+
+All six checks passed.
+
+### Other Issues I Evaluated
+
+All candidates come from my code-verified bench in [`bug-archive.md`](./bug-archive.md); availability re-verified 2026-07-01.
+
+| Candidate | Why I passed on it (for this cycle) |
+|---|---|
+| Follow-up invited by @manzt on PR #603 (surface disabled state in UI + enable/disable commands) | Strongest maintainer signal, but it is a *feature* with no issue filed yet and a larger, UI-heavy scope — wrong shape for a Week 5 phase-structured cycle. Deferred to Cycle 3; I have publicly offered to scope it and will keep that thread alive. |
+| #531 — "Open as marimo notebook" deletes an unsaved file | Highest user impact (real data loss) and analysis ready; second choice. More moving parts than #581 (VS Code save-prompt flows are harder to test deterministically). |
+| #491 — config toggle crashes before first run | Python-side fix would diversify my stack, but the maintainer framed the fix at a different layer, so it needs a design answer *before* building — a schedule risk #581 doesn't have. |
+| #351 — auto-reload button desync | Small, but pure startup-state polish with less user pain than #581's undebuggable error messages. |
+| #591 — undefined-variable squiggle desync | Parked in June as a research project (the diagnostics likely come from the managed `ty` server, not this repo). Still parked. |
+
+### Risks I Noted
+
+- **My June analysis is one refactor old.** `errors.ts` is unchanged, but `ExecutionRegistry.ts` — where the `cellIdMapper` call sites lived in my analysis — was heavily refactored upstream (~400 lines changed). Phase II must re-map the call sites from current code rather than trusting the archive's line numbers.
+- **The exact emitting path needs confirmation.** The reported message (`Ancestor raised: …`) may be composed by a wrapper around `prettyErrorMessage`; the Phase II reproduction will confirm the precise formatting path before I write the fix.
+- **Fast-moving repo** (unchanged from Cycle 1): rebase frequently, open a draft PR early — the pattern that worked last time.
+
+---
+
 ## Learnings & Reflections
 
 ### Technical Skills Gained
@@ -347,3 +414,4 @@ I am responsible for every line in my pull request. This table logs how I used A
 | 2026-06-22 | Claude Code | Phase IV pre-submission audit (walking the diff, checking conventions/CODEOWNERS, rebase-risk), rebasing onto upstream, rewriting the PR description, marking the PR ready, and drafting the reviewer comment | I ran the manual F5 end-to-end check myself (the disabled cell produced no output), read the PR description before it went public, and approved each outward action (rebase, mark-ready, comment) |
 | 2026-06-24 | Claude Code | Tracing marimo's kernel to verify the fix is complete (reactive vs. explicit execution of disabled cells) and recording the merge | I read the maintainer's review and confirmed on GitHub that PR #603 was approved and merged (squash `619188e`) |
 | 2026-06-28 | Claude Code | Completing the journal — the Learnings & Reflections section and this AI usage log | I reviewed and edited these entries for accuracy and ownership |
+| 2026-07-01 | Claude Code | Cycle 2 Phase I: re-verifying every bench candidate's availability (state, assignees, linked PRs via issue timelines), confirming the #581 root cause is still present on current upstream `main`, and drafting the Cycle 2 Phase I section | I read issue #581 and @mscolnick's comment directly, checked the `errors.ts` branches on upstream `main` myself, and I make the final call on claiming the issue and posting the claim comment |

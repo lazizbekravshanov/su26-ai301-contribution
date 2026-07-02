@@ -442,7 +442,20 @@ Test-driven, on branch `fix-issue-1244-did2s-unestimated-fixef` (from upstream `
 |---|---|---|---|
 | 2026-07-02 | @leostimpfle | **Approved and merged the follow-up PR #1369** (mypy fixes) within hours of it opening | — |
 | 2026-07-02 | @s3alfisc | Asked the all-contributors bot to **add me to the project's contributors list** ("please add @lazizbekravshanov for code") on #1369 | Rebased #1368 onto the new `master` (now containing the mypy fix); pre-commit.ci re-ran **green**; regression test re-verified on the rebased branch |
+| 2026-07-02 | @s3alfisc | Sent a thanks note on the merged PR: *"Thanks @lazizbekravshanov!"* | Replied to keep the relationship warm; #1368 review still pending |
 | — | — | *awaiting review of the main fix, PR #1368* | — |
+
+### Proof of Merge — PR #1369
+
+Screenshots captured from [github.com/py-econometrics/pyfixest/pull/1369](https://github.com/py-econometrics/pyfixest/pull/1369) on 2026-07-02 ([full-page screenshot](assets/pr1369-merged.png)):
+
+*Merged by maintainer @leostimpfle (13 checks passed):*
+
+![PR #1369 merged banner](assets/pr1369-merged-header.png)
+
+*Maintainer @s3alfisc adding me to the contributors list and sending thanks:*
+
+![Maintainer thanks note on PR #1369](assets/pr1369-thanks.png)
 
 ---
 

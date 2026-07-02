@@ -390,6 +390,34 @@ Selection ran in three rounds on 2026-07-02, all availability claims verified li
 
 [Claim comment posted 2026-07-02](https://github.com/py-econometrics/pyfixest/issues/1244#issuecomment-4867926223): asks whether the issue is free (the maintainer had said he'd look himself), states the intended approach (detect unestimable first-stage fixed-effect levels early, regression test on synthetic collinear data first), and poses the hard-error-vs-graceful-handling design question. Awaiting @s3alfisc's reply; Phase II (environment setup + reproduction) can start in parallel since the repro work is useful under either design answer.
 
+## Cycle 2 — Phase II: Reproduce and Plan
+
+### Environment Setup (2026-07-02)
+
+- Forked `py-econometrics/pyfixest` → `lazizbekravshanov/pyfixest`; cloned to `~/pet/pyfixest` with the original repo as the `upstream` remote (fork `master` at upstream head `27dfbba`).
+- Toolchain per the contributing guide: **pixi** manages everything (`brew install pixi`, then any `pixi run …` task auto-creates the conda environment, including the Rust toolchain and the maturin-built `src/` extension — no global Rust needed). Key tasks: `pixi run test-py` (quick suite), `pixi run lint` (prek hooks).
+- First environment build + `import pyfixest` succeeded on the first attempt — a welcome contrast to Cycle 1's two setup failures.
+
+### Reproduction (2026-07-02, upstream `master` @ `27dfbba`)
+
+The reporter's recipe (delete a key from `fit1.fixef()`) simulates the failure; I found a **natural trigger that needs no code modification**: an *always-treated* unit. `_did2s_estimate` fits the first stage only on not-yet-treated rows (`did2s.py:205-207`), so a unit with no untreated periods never gets its fixed effect estimated; `fit1.predict(newdata=data)` returns `NaN` for all of that unit's rows (`did2s.py:231`), the NaNs flow into the second-stage dependent variable, `feols` silently drops those rows, and `_second_u` comes out shorter than the full-length arrays built from `data` in `_did2s_vcov`.
+
+Synthetic panel (20 units × 10 years, unit 1 treated from period 1) crashes exactly as reported:
+
+```
+File "pyfixest/did/did2s.py", line 355, in _did2s_vcov
+    second_u *= weights_array
+ValueError: operands could not be broadcast together with shapes (190,) (200,) (190,)
+```
+
+190 vs 200 = the always-treated unit's 10 dropped rows. This confirms the reporter's mechanism end-to-end and shows the bug fires on completely ordinary DiD data (always-treated units are common), not just degenerate collinearity.
+
+### Fix Plan (pending maintainer's design answer)
+
+- **Guard location**: in `_did2s_estimate`, immediately after `Y_hat = fit1.predict(newdata=data)` (`did2s.py:231`) — check `np.isnan(Y_hat)`; if any, resolve *which* fixed-effect levels are missing by comparing `fit1.fixef()`'s levels per FE variable against the levels present in `data`, and raise an informative error naming them (e.g., "unit levels [1] have no not-yet-treated observations, so their fixed effects cannot be estimated in the first stage").
+- **Test**: regression test in `tests/test_did.py` with the synthetic always-treated panel, `pytest.raises` asserting the new error message — fails on current master (where the broadcast `ValueError` escapes instead).
+- **Alternative if the maintainer prefers graceful handling**: drop the affected rows with a warning before the second stage and keep all downstream arrays consistent — bigger change, touches `_did2s_vcov` array construction.
+
 ---
 
 ## Learnings & Reflections

@@ -2,7 +2,16 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 Phase I — issue #491 selected (2026-07-02)
+**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 Phase I — py-econometrics/pyfixest #1244 selected (2026-07-02)
+
+## Contributions at a Glance
+
+| # | Issue | Project | Contribution | Status |
+|---|---|---|---|---|
+| 1 | [#154 — Extension runs cells marked as disabled](https://github.com/marimo-team/marimo-lsp/issues/154) | [marimo-team/marimo-lsp](https://github.com/marimo-team/marimo-lsp) (TypeScript / Python) | [PR #603](https://github.com/marimo-team/marimo-lsp/pull/603) — skip disabled cells in the execute-cells request | ✅ **Merged** 2026-06-24 (closed #154) |
+| 2 | [#1244 — did2s estimator: `ValueError` when first-stage fixed effects can't be estimated](https://github.com/py-econometrics/pyfixest/issues/1244) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | Early, informative detection of unestimable fixed-effect levels + regression test | 🔄 **In progress** — Phase I complete (selected 2026-07-02) |
+
+Cycle 1 (#154) is documented in full below, unchanged; Cycle 2 (#1244) documentation starts at [Cycle 2](#cycle-2).
 
 ---
 
@@ -296,77 +305,86 @@ Conclusion: the fix is **complete** for #154 — there is no reactive path that 
 
 # Cycle 2
 
-*Cycle 1 (#154 → PR #603) merged 2026-06-24; everything above documents it. Cycle 2 starts Week 5 with a second contribution to the same project.*
+*Cycle 1 (#154 → PR #603) merged 2026-06-24; everything above documents it and stays as the record of that contribution. Cycle 2 starts Week 5 with a second contribution — this time to a different project, selected from the course's official issue list.*
+
+## Cycle 2 — Project
+
+**Project:** [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest)
+**My fork:** to be created at the start of Phase II
+
+pyfixest is a Python library for fast fixed-effects regression and related econometric estimators (a Python counterpart to R's `fixest`), built on pandas/NumPy with a Rust demeaning backend. My issue lives in its difference-in-differences module (`pyfixest/did/did2s.py`).
 
 ## Cycle 2 — Phase I: Issue Selection
 
 ### Issue
 
-[marimo-team/marimo-lsp #491: Cell change option auto/lazy crashes](https://github.com/marimo-team/marimo-lsp/issues/491)
+[py-econometrics/pyfixest #1244: `event_study` did2s estimator gives `ValueError` when some fixed effects are not estimated in the first stage](https://github.com/py-econometrics/pyfixest/issues/1244)
 
 Labels: `bug`
 
-> Selection note: on 2026-07-01 I had tentatively picked #581 (raw cell UUID in error messages); before claiming it I re-ranked the bench by **maintainer responsiveness** — I want a reviewer who is actively answering on the issue itself — and switched to #491, where CODEOWNER @manzt (who reviewed and merged my PR #603) personally posted a diagnosis. #581 stays on the bench.
+> Selection note: earlier picks this cycle were marimo-lsp #581 (2026-07-01) and marimo-lsp #491 (2026-07-02 morning), both from my Cycle 1 bench. The selection was redone the same day from the **course's official issue list** (`AI301 Issue Candidates.xlsx`, 24,774 rows, refreshed 6/26) with two hard criteria: the issue is genuinely unresolved and unclaimed, and the maintainer is *actively responding* on the issue/repo. I also wanted the Python stack this cycle. #1244 won; the full elimination trail is under "Other Issues I Evaluated".
 
 ### Why I Chose This Issue
 
-Toggling a cell's `on_cell_change` option between auto and lazy **before the notebook has run** fails with "Failed to toggle…" — and, per the reporter, this happens on every fresh VS Code start. @manzt triaged it the same day it was filed: *"I believe this may be a race-condition where our serializer depends on the marimo-lsp server running. We should probably delay the ability to deserialize until the LSP has started."* That is the strongest active-maintainer signal on my bench: the person who will review the PR has already engaged with the bug's design.
+pyfixest is a Python econometrics library (fixed-effects regressions à la R's `fixest`). In its two-stage difference-in-differences estimator (`did2s`), when the first-stage regression cannot estimate some fixed-effect levels (e.g., a collinear unit×time combination), the predicted values for those rows become `NaN`, the second-stage residual vector `_second_u` ends up **shorter** than the first-stage `_first_u`, and calling `vcov()` later explodes with an opaque `ValueError: operands could not be broadcast together with shapes` deep inside `_did2s_vcov`.
 
-I root-caused it during Cycle 1's candidate screening ([`bug-archive.md`](./bug-archive.md), verified 2026-06-10) and **re-verified it 2026-07-02 against upstream `main` (`157ab4a`)**, where both halves of the failure are unchanged:
+The reporter (@marcandre259) did outstanding groundwork: exact mechanism traced through `did2s.py`, a synthetic-repro recipe (drop a key from `fit1.fixef()` after the first stage), and a clear statement of expected behavior — collinearity *should* error, but **early and informatively**, not as a broadcast failure three calls later. Maintainer @s3alfisc confirmed the same day (2026-03-11): *"Indeed this looks like a bug to me. I'll try to take a look over the weekend =)"* — and hasn't gotten to it in the 3.5 months since. Verified 2026-07-02 via the GitHub API: still open, unassigned, zero linked PRs, zero competing claims.
 
-- **Server side** — `update_configuration` (`src/marimo_lsp/api.py`) requires an existing session (sessions are only created when the notebook first runs); with none it returns `{"success": false, "error": "No session found"}`.
-- **Extension side** — `MarimoConfigurationService.updateConfig` (`extension/src/config/MarimoConfigurationService.ts`) decodes that response with `MarimoConfigResponseSchema`, which **requires a `config` key** — the error shape fails to decode and the toggle surfaces the failure. Notably, `extension/src/config/schemas.ts` already defines a `MarimoConfigUpdateResponseSchema` (`success`/`config`/`error`) that models the error shape, but `updateConfig` doesn't use it.
-
-The issue is still open with no assignee, no linked PRs, and no competing claim comments (state, assignees, full comment threads, and timeline cross-references checked via the GitHub API on 2026-07-02).
-
-Choosing within marimo-lsp again also converts Cycle 1's setup investment — the standing dev environment, the sibling marimo checkout, the test/lint toolchain, and a working relationship with the reviewer — into pure contribution time.
+The maintainer-responsiveness evidence is repo-wide, not just this thread: sampling pyfixest's issue tracker shows @s3alfisc replying to reporters and would-be contributors within 1–2 days, consistently and warmly (e.g., #961, #1177, #1244 itself).
 
 ### Definition of Done
 
-- Toggling auto/lazy on a **not-yet-run notebook** persists the configuration and reports success — no error toast, and the setting survives to when the session starts.
-- The **fix layer is agreed with @manzt first**: his triage points at gating deserialization on LSP readiness; my analysis points at the server's no-session branch (persist via the default config-manager path and skip the kernel control request). The claim comment asks him directly before I build.
-- **Regression tests** fail on the current code for the no-session path and pass with the fix (Python and/or TS, depending on the agreed layer).
-- Full **`just test-ts` stays green** and `just lint` is clean (plus the Python test suite if the fix lands server-side).
-- A **manual F5 check** reproduces the reporter's steps — fresh VS Code, open notebook, toggle auto/lazy before running — and shows the toggle succeeding.
-- A **pull request linked to #491** is opened, reviewed, and (target) merged.
+- **Claim accepted**: since the maintainer said he'd look at it himself, the claim comment explicitly asks whether it's free to take before any code is written.
+- A **regression test** reproduces the failure on current `master` (synthetic collinear data or the reporter's fixef-key-removal recipe) and fails before the fix.
+- The fix makes the failure mode **explicit and early**: unestimated first-stage fixed-effect levels are detected right after the first stage and raise an informative error naming the offending levels (or handle them gracefully, if the maintainer prefers — asked in the claim comment).
+- The project's **full test suite and lint pass** per its contributing guide.
+- A **pull request linked to #1244** is opened, reviewed, and (target) merged.
 
 ### How This Contribution Aligns With My Goals
 
-Cycle 1 proved the end-to-end workflow; Cycle 2 shifts the emphasis:
-
-1. **Designing with the maintainer, not just fixing.** Cycle 1's design question (extension vs. server layer) was answered implicitly at review time. Here the layer question is the *starting point*: @manzt has a stated hypothesis, my code analysis suggests a complementary one, and the contribution begins by reconciling them — practicing the ask-before-building discipline the course emphasizes.
-2. **Crossing the stack boundary.** Cycle 1 stayed in the TypeScript extension. #491's failure spans the Python LSP server and the TS response schema, and the fix may land server-side — diversifying my contribution surface within the same project.
-3. **Sustaining a maintainer relationship.** A second merged PR with the same reviewer (@manzt) builds a track record, while his invited follow-up from PR #603 (disabled-cell UI) stays scoped as a Cycle 3 candidate.
+1. **Switching stacks deliberately.** Cycle 1 was TypeScript in a VS Code extension; this is pure Python in a scientific-computing library — different test culture (pytest + numerical assertions), different review norms, and my first contribution where correctness is *statistical*, not just behavioral.
+2. **Working a new maintainer relationship from zero.** Cycle 1's reviewer knew my work by PR time. Here I start cold with a claim comment that must carry its own credibility: reproduce first, propose the fix shape, ask the design question up front.
+3. **Contributing where the diagnosis isn't mine.** The reporter's analysis is the map; my job is to verify it independently, convert it into a failing test, and negotiate the error-vs-graceful-handling design with the maintainer — practicing building on someone else's investigation rather than my own.
 
 ### Issue Selection Checklist Notes
 
-1. **I understand the problem.** In one sentence: changing a cell's auto/lazy option before the notebook has ever run fails, because the config-update request requires a kernel session that doesn't exist yet. "Fixed" looks like: the toggle works on a fresh, never-run notebook.
-2. **Scope fits the time available.** The failure is localized to one server handler and one extension decode site, both already mapped; the main scheduling risk (the design question) is front-loaded into the claim comment rather than discovered mid-build.
-3. **Matches my skills.** TypeScript on the extension side is Cycle 1 ground; the Python side is pygls handler code I already read end-to-end during screening — and stretching into it is goal #2.
-4. **Active and claimable.** Verified 2026-07-02: open, no assignee, no linked PRs (issue timeline checked), no competing claims; both existing comments are the reporter and the maintainer.
-5. **Helpful context.** The reporter narrowed the trigger (only before first run, every fresh VS Code start); the maintainer posted a diagnosis; my own June root-cause analysis is on file and re-verified; a ready-made response schema for the error shape already exists in the codebase.
-6. **Setup documented — and already done.** The Cycle 1 environment (fork, sibling marimo checkout at the pinned version, `uv`/`pnpm`/`just` toolchain) is standing and was exercised as recently as the Cycle 1 rebase.
+1. **I understand the problem.** In one sentence: when did2s's first stage can't estimate some fixed-effect levels, downstream arrays silently diverge in length and `vcov()` crashes with an unrelated-looking broadcast error. "Fixed" looks like: the problem is caught at the first stage with an error message that names the unestimable levels.
+2. **Scope fits the time available.** The mechanism is already traced to specific lines (`did2s.py` ~217 first-stage predictions, ~372 `second_u *= weights_array`); the work is verification, a failing test, an early guard, and the design conversation.
+3. **Matches my skills.** Python, pandas/NumPy arrays, pytest — my primary stack (Cycle 1 was the stretch; this is home ground plus new domain vocabulary).
+4. **Active and claimable.** Verified 2026-07-02: open, unassigned, no linked PRs (timeline cross-references checked), no competing claim comments; maintainer active on the repo within the last two weeks.
+5. **Helpful context.** Reporter provided mechanism, repro recipe, and diagnostic code; maintainer confirmed it's a real bug; the file is self-contained (`pyfixest/did/did2s.py`).
+6. **Setup documented.** New environment (fork + clone + `uv`-managed Python deps per the contributing guide) — planned as the first Phase II step; unlike Cycle 1 there is no GUI dependency, so the whole repro is scriptable.
 
 All six checks passed.
 
 ### Other Issues I Evaluated
 
-All candidates come from my code-verified bench in [`bug-archive.md`](./bug-archive.md); availability re-verified 2026-07-02 (state, assignees, comment threads, and timeline cross-references via the GitHub API).
+Selection ran in three rounds on 2026-07-02, all availability claims verified live via the GitHub API (state, assignees, full comment threads, timeline cross-references).
 
-| Candidate | Why I passed on it (for this cycle) |
+**Round 1 — course spreadsheet triage.** Parsed `AI301 Issue Candidates.xlsx` (24,774 rows; found and corrected a one-row misalignment between the metadata columns and the URL column). Filtered to unclaimed issues in repos whose primary language is Python/TypeScript/JavaScript (7,687), then live-checked ~360 sampled issues across 40 repos. Most of the field fell to four failure modes: already claimed or PR'd (zulip, scikit-learn, stdlib, airflow — heavily farmed), maintainer replies years stale (cpython, galaxy, DSpace, element-web), no maintainer engagement at all (code-charity/youtube, aden-hive/hive), or untestable on my machine (nvaccess/nvda — Windows-only).
+
+**Round 2 — finalists.** | Candidate | Why not |
 |---|---|
-| #581 — raw cell UUID in error messages | My 2026-07-01 tentative pick: smallest scope, maintainer-endorsed direction. But the endorsement is a single month-old comment from a contributor, not the reviewing CODEOWNER — weaker on the responsiveness criterion I ranked by this cycle. Stays first on the bench. |
-| Follow-up invited by @manzt on PR #603 (surface disabled state in UI + enable/disable commands) | Strongest maintainer signal, but it is a *feature* with no issue filed yet and a larger, UI-heavy scope — wrong shape for a Week 5 phase-structured cycle. Deferred to Cycle 3; I have publicly offered to scope it and will keep that thread alive. |
-| #531 — "Open as marimo notebook" deletes an unsaved file | Highest user impact (real data loss) and analysis ready — but zero maintainer comments in two-plus months, the weakest responsiveness signal on the bench. |
-| #351 — auto-reload button desync | Small, but zero comments from anyone and pure startup-state polish. |
-| #591 — undefined-variable squiggle desync | Freshest maintainer reply (2026-06-18), but parked in June as a research project (the diagnostics likely come from the managed `ty` server, not this repo). Still parked. |
+| WeblateOrg/weblate #12167, #10341 (Python; the most responsive maintainer found, replies <1 day) | Both already requested by fellow AI301 students in June; every other viable Weblate good-first-issue also had a fresh claim or open PR. |
+| refined-github #9722 (TypeScript; `small`+`help wanted`, maintainer replied Jun 13 with module pointer) | Strongest frontend option — passed on it because I wanted Python this cycle. |
+| super-productivity #5950 (TypeScript; owner said "PRs are welcome") | Same reason; also the thread mixes two problems. |
+| OpenSearch-Dashboards #10338 (TypeScript; maintainer diagnosed root cause) | Single maintainer comment ever (Sep 2025) — weakest responsiveness evidence. |
+| pyfixest #961 (Python; docs) | Initially chosen, then dropped on a full-thread read: a contributor had already offered in May 2026 and was awaiting the maintainer's reply, and the remaining work is docs cross-linking — thin for a cycle. |
+
+**Round 3 — inside pyfixest.** | Candidate | Why not |
+|---|---|
+| #1138 `fixef_tol` not passed to scipy/cupy | Maintainer-authored with exact pointer, but entangled with the open performance investigation #1042, and the cupy path needs a GPU. |
+| #1177 `fixef()` on IV | Small feature, maintainer receptive — but #1244 is a confirmed bug with a repro recipe, a better shape for the phase structure. |
+| #1123 deprecate renaming utils | Mechanical cleanup; weakest learning story. |
+
+**Prior marimo-lsp bench** (#581, #491, #531, #351, #591 — analyses in [`bug-archive.md`](./bug-archive.md)): all verified still available on 2026-07-02 and remain Cycle 3 candidates, alongside @manzt's invited follow-up from PR #603.
 
 ### Risks I Noted
 
-- **The fix layer is genuinely open.** @manzt framed the bug as "delay deserialize until the LSP has started" (extension/serializer layer); my analysis points at the server's no-session branch. If he insists on the serializer-gating approach, the fix is bigger than my sketch. Mitigation: the claim comment presents both options and asks — no code before his answer.
-- **My June analysis is one refactor old.** The buggy branches re-verified unchanged on `157ab4a` (2026-07-02), but line numbers moved (`update_configuration` is now at `api.py:353`) and the config service code has churned; Phase II re-maps everything from current code.
-- **Reproduction requires timing.** The bug only manifests on a never-run notebook in a fresh VS Code instance; the F5 repro script must be precise about ordering, and automated tests need to simulate the no-session state rather than the GUI timing.
-- **Fast-moving repo** (unchanged from Cycle 1): rebase frequently, open a draft PR early — the pattern that worked last time.
+- **The maintainer said he'd look at it himself.** He may have local work-in-progress. Mitigation: the claim comment asks explicitly before I build anything.
+- **No shareable dataset.** The reporter couldn't share data, so the regression test must construct synthetic collinear panel data (or use the fixef-key-removal recipe) — the repro is mine to build, and it must convincingly represent the real failure.
+- **Design question is open.** Early informative error vs. graceful handling (drop unestimable levels and proceed) — the reporter is fine with an error; the maintainer hasn't said. Asked up front in the claim comment.
+- **New project, new toolchain.** First contribution outside marimo-lsp: fork, environment, contributing conventions, and CI norms all need discovery — budgeted as the first Phase II task, with the Mon 2026-07-06 deadline in view.
 
 ---
 
@@ -424,4 +442,4 @@ I am responsible for every line in my pull request. This table logs how I used A
 | 2026-06-24 | Claude Code | Tracing marimo's kernel to verify the fix is complete (reactive vs. explicit execution of disabled cells) and recording the merge | I read the maintainer's review and confirmed on GitHub that PR #603 was approved and merged (squash `619188e`) |
 | 2026-06-28 | Claude Code | Completing the journal — the Learnings & Reflections section and this AI usage log | I reviewed and edited these entries for accuracy and ownership |
 | 2026-07-01 | Claude Code | Cycle 2 Phase I: re-verifying every bench candidate's availability (state, assignees, linked PRs via issue timelines), confirming the #581 root cause is still present on current upstream `main`, and drafting the Cycle 2 Phase I section | I read issue #581 and @mscolnick's comment directly, checked the `errors.ts` branches on upstream `main` myself, and I make the final call on claiming the issue and posting the claim comment |
-| 2026-07-02 | Claude Code | Cycle 2 Phase I (final selection): re-pulling live state and full comment threads for all five bench issues, checking for competing claims and linked PRs, re-verifying the #491 root cause on upstream `main` (`api.py` no-session branch + `MarimoConfigResponseSchema` decode site), and rewriting the Phase I section after I switched the pick to #491 | I set the selection criterion (active maintainer responsiveness), chose #491 myself from the presented options, and I review and post the claim comment |
+| 2026-07-02 | Claude Code | Cycle 2 Phase I (full selection): parsing the course's 24,774-row issue spreadsheet (including diagnosing its one-row URL-column misalignment), live-verifying ~360 sampled issues across 40 repos via the GitHub API (state, assignees, linked PRs, claim comments, maintainer response recency), surfacing candidate slates each round, and drafting the Phase I journal section | I set the selection criteria (unresolved, unclaimed, actively-responding maintainer, Python or frontend stack), personally made the call at every decision point across three rounds — including rejecting two of my earlier tentative picks — and I review and post the claim comment |

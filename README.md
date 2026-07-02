@@ -2,7 +2,7 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 Phase I — issue #581 selected (2026-07-01)
+**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 Phase I — issue #491 selected (2026-07-02)
 
 ---
 
@@ -302,61 +302,70 @@ Conclusion: the fix is **complete** for #154 — there is no reactive path that 
 
 ### Issue
 
-[marimo-team/marimo-lsp #581: Error message using unclear cell identifier instead of cell number](https://github.com/marimo-team/marimo-lsp/issues/581)
+[marimo-team/marimo-lsp #491: Cell change option auto/lazy crashes](https://github.com/marimo-team/marimo-lsp/issues/491)
 
 Labels: `bug`
 
+> Selection note: on 2026-07-01 I had tentatively picked #581 (raw cell UUID in error messages); before claiming it I re-ranked the bench by **maintainer responsiveness** — I want a reviewer who is actively answering on the issue itself — and switched to #491, where CODEOWNER @manzt (who reviewed and merged my PR #603) personally posted a diagnosis. #581 stays on the bench.
+
 ### Why I Chose This Issue
 
-When a cell fails because an ancestor raised an exception, the extension's error message identifies the culprit by raw kernel UUID — `(raised in cell: 918d2406-014b-4a20-9c9a-ba8cb7ab2ba2)` — which is meaningless to a user who knows cells by number. marimo core maintainer @mscolnick confirmed the direction on the issue: *"Yes this is something we can fix with a hyperlink."*
+Toggling a cell's `on_cell_change` option between auto and lazy **before the notebook has run** fails with "Failed to toggle…" — and, per the reporter, this happens on every fresh VS Code start. @manzt triaged it the same day it was filed: *"I believe this may be a race-condition where our serializer depends on the marimo-lsp server running. We should probably delay the ability to deserialize until the LSP has started."* That is the strongest active-maintainer signal on my bench: the person who will review the PR has already engaged with the bug's design.
 
-I had already root-caused this during Cycle 1's candidate screening ([`bug-archive.md`](./bug-archive.md), verified 2026-06-10): `prettyErrorMessage` in `extension/src/lib/errors.ts` **receives** a `cellIdMapper` — the same mapper that already renders clickable `cell-N` hyperlinks for multiple-definition errors — but applies it **only** in that one branch. The `exception`, `ancestor-stopped`, `ancestor-prevented`, and `strict-exception` branches interpolate the raw UUID directly. **Re-verified 2026-07-01 against upstream `main` (`157ab4a`):** the buggy branches are unchanged, and the issue is still open with no assignee, no linked PRs, and no competing claim comments (timeline cross-references checked via the GitHub API).
+I root-caused it during Cycle 1's candidate screening ([`bug-archive.md`](./bug-archive.md), verified 2026-06-10) and **re-verified it 2026-07-02 against upstream `main` (`157ab4a`)**, where both halves of the failure are unchanged:
 
-Choosing within marimo-lsp also converts Cycle 1's setup investment — the standing dev environment, the sibling marimo checkout, the test/lint toolchain, and a working relationship with the reviewer — into pure contribution time.
+- **Server side** — `update_configuration` (`src/marimo_lsp/api.py`) requires an existing session (sessions are only created when the notebook first runs); with none it returns `{"success": false, "error": "No session found"}`.
+- **Extension side** — `MarimoConfigurationService.updateConfig` (`extension/src/config/MarimoConfigurationService.ts`) decodes that response with `MarimoConfigResponseSchema`, which **requires a `config` key** — the error shape fails to decode and the toggle surfaces the failure. Notably, `extension/src/config/schemas.ts` already defines a `MarimoConfigUpdateResponseSchema` (`success`/`config`/`error`) that models the error shape, but `updateConfig` doesn't use it.
+
+The issue is still open with no assignee, no linked PRs, and no competing claim comments (state, assignees, full comment threads, and timeline cross-references checked via the GitHub API on 2026-07-02).
+
+Choosing within marimo-lsp again also converts Cycle 1's setup investment — the standing dev environment, the sibling marimo checkout, the test/lint toolchain, and a working relationship with the reviewer — into pure contribution time.
 
 ### Definition of Done
 
-- All four raw-UUID branches of `prettyErrorMessage` render the human-readable cell reference (the same hyperlink treatment `formatMultipleDefinitionError` already produces via `createCellNavigationLink`) whenever the mapper can resolve the id, falling back to the raw id when it cannot.
-- **Regression tests** fail on the current code for the affected branches and pass with the fix.
-- Full **`just test-ts` stays green** and `just lint` is clean.
-- A **manual F5 check** using the reporter's own two-cell notebook shows a cell reference/hyperlink in the error message instead of a UUID.
-- A **pull request linked to #581** is opened, reviewed, and (target) merged.
+- Toggling auto/lazy on a **not-yet-run notebook** persists the configuration and reports success — no error toast, and the setting survives to when the session starts.
+- The **fix layer is agreed with @manzt first**: his triage points at gating deserialization on LSP readiness; my analysis points at the server's no-session branch (persist via the default config-manager path and skip the kernel control request). The claim comment asks him directly before I build.
+- **Regression tests** fail on the current code for the no-session path and pass with the fix (Python and/or TS, depending on the agreed layer).
+- Full **`just test-ts` stays green** and `just lint` is clean (plus the Python test suite if the fix lands server-side).
+- A **manual F5 check** reproduces the reporter's steps — fresh VS Code, open notebook, toggle auto/lazy before running — and shows the toggle succeeding.
+- A **pull request linked to #491** is opened, reviewed, and (target) merged.
 
 ### How This Contribution Aligns With My Goals
 
 Cycle 1 proved the end-to-end workflow; Cycle 2 shifts the emphasis:
 
-1. **Compressing issue-to-PR time.** With the environment, conventions, and codebase knowledge already in hand, the goal is a tight cycle — measured in days, not weeks — without cutting the evidence discipline (failing test first, verified root cause, audited diff).
-2. **User-facing polish.** Cycle 1 fixed silent wrong behavior; this issue is about the *communication surface* of errors — turning an opaque UUID into a navigable cell link, which exercises judgment about UX in developer tools, not just correctness.
-3. **Sustaining a maintainer relationship.** A second merged PR to the same project builds a track record with the same reviewer (@manzt), while @manzt's invited follow-up from PR #603 (disabled-cell UI) stays scoped as a Cycle 3 candidate.
+1. **Designing with the maintainer, not just fixing.** Cycle 1's design question (extension vs. server layer) was answered implicitly at review time. Here the layer question is the *starting point*: @manzt has a stated hypothesis, my code analysis suggests a complementary one, and the contribution begins by reconciling them — practicing the ask-before-building discipline the course emphasizes.
+2. **Crossing the stack boundary.** Cycle 1 stayed in the TypeScript extension. #491's failure spans the Python LSP server and the TS response schema, and the fix may land server-side — diversifying my contribution surface within the same project.
+3. **Sustaining a maintainer relationship.** A second merged PR with the same reviewer (@manzt) builds a track record, while his invited follow-up from PR #603 (disabled-cell UI) stays scoped as a Cycle 3 candidate.
 
 ### Issue Selection Checklist Notes
 
-1. **I understand the problem.** In one sentence: error messages show the raising cell's raw kernel UUID instead of the cell number/link users actually see. "Fixed" looks like: every error branch resolves the UUID through the already-available `cellIdMapper`, with tests covering each branch.
-2. **Scope fits the time available.** The core change is confined to one file's formatting branches plus tests — the smallest item on my verified bench, appropriate for a Week 5 start.
-3. **Matches my skills.** TypeScript, in the same `extension/src/lib/` area as Cycle 1, using the same vitest/Effect-TS test idioms I learned there.
-4. **Active and claimable.** Verified 2026-07-01: open, no assignee, no linked PRs (issue timeline checked), only comment is the maintainer's endorsement.
-5. **Helpful context.** The reporter provided an exact reproduction notebook; the maintainer endorsed the hyperlink approach; my own June root-cause analysis is on file and re-verified; the target rendering helper (`createCellNavigationLink`) already exists.
+1. **I understand the problem.** In one sentence: changing a cell's auto/lazy option before the notebook has ever run fails, because the config-update request requires a kernel session that doesn't exist yet. "Fixed" looks like: the toggle works on a fresh, never-run notebook.
+2. **Scope fits the time available.** The failure is localized to one server handler and one extension decode site, both already mapped; the main scheduling risk (the design question) is front-loaded into the claim comment rather than discovered mid-build.
+3. **Matches my skills.** TypeScript on the extension side is Cycle 1 ground; the Python side is pygls handler code I already read end-to-end during screening — and stretching into it is goal #2.
+4. **Active and claimable.** Verified 2026-07-02: open, no assignee, no linked PRs (issue timeline checked), no competing claims; both existing comments are the reporter and the maintainer.
+5. **Helpful context.** The reporter narrowed the trigger (only before first run, every fresh VS Code start); the maintainer posted a diagnosis; my own June root-cause analysis is on file and re-verified; a ready-made response schema for the error shape already exists in the codebase.
 6. **Setup documented — and already done.** The Cycle 1 environment (fork, sibling marimo checkout at the pinned version, `uv`/`pnpm`/`just` toolchain) is standing and was exercised as recently as the Cycle 1 rebase.
 
 All six checks passed.
 
 ### Other Issues I Evaluated
 
-All candidates come from my code-verified bench in [`bug-archive.md`](./bug-archive.md); availability re-verified 2026-07-01.
+All candidates come from my code-verified bench in [`bug-archive.md`](./bug-archive.md); availability re-verified 2026-07-02 (state, assignees, comment threads, and timeline cross-references via the GitHub API).
 
 | Candidate | Why I passed on it (for this cycle) |
 |---|---|
+| #581 — raw cell UUID in error messages | My 2026-07-01 tentative pick: smallest scope, maintainer-endorsed direction. But the endorsement is a single month-old comment from a contributor, not the reviewing CODEOWNER — weaker on the responsiveness criterion I ranked by this cycle. Stays first on the bench. |
 | Follow-up invited by @manzt on PR #603 (surface disabled state in UI + enable/disable commands) | Strongest maintainer signal, but it is a *feature* with no issue filed yet and a larger, UI-heavy scope — wrong shape for a Week 5 phase-structured cycle. Deferred to Cycle 3; I have publicly offered to scope it and will keep that thread alive. |
-| #531 — "Open as marimo notebook" deletes an unsaved file | Highest user impact (real data loss) and analysis ready; second choice. More moving parts than #581 (VS Code save-prompt flows are harder to test deterministically). |
-| #491 — config toggle crashes before first run | Python-side fix would diversify my stack, but the maintainer framed the fix at a different layer, so it needs a design answer *before* building — a schedule risk #581 doesn't have. |
-| #351 — auto-reload button desync | Small, but pure startup-state polish with less user pain than #581's undebuggable error messages. |
-| #591 — undefined-variable squiggle desync | Parked in June as a research project (the diagnostics likely come from the managed `ty` server, not this repo). Still parked. |
+| #531 — "Open as marimo notebook" deletes an unsaved file | Highest user impact (real data loss) and analysis ready — but zero maintainer comments in two-plus months, the weakest responsiveness signal on the bench. |
+| #351 — auto-reload button desync | Small, but zero comments from anyone and pure startup-state polish. |
+| #591 — undefined-variable squiggle desync | Freshest maintainer reply (2026-06-18), but parked in June as a research project (the diagnostics likely come from the managed `ty` server, not this repo). Still parked. |
 
 ### Risks I Noted
 
-- **My June analysis is one refactor old.** `errors.ts` is unchanged, but `ExecutionRegistry.ts` — where the `cellIdMapper` call sites lived in my analysis — was heavily refactored upstream (~400 lines changed). Phase II must re-map the call sites from current code rather than trusting the archive's line numbers.
-- **The exact emitting path needs confirmation.** The reported message (`Ancestor raised: …`) may be composed by a wrapper around `prettyErrorMessage`; the Phase II reproduction will confirm the precise formatting path before I write the fix.
+- **The fix layer is genuinely open.** @manzt framed the bug as "delay deserialize until the LSP has started" (extension/serializer layer); my analysis points at the server's no-session branch. If he insists on the serializer-gating approach, the fix is bigger than my sketch. Mitigation: the claim comment presents both options and asks — no code before his answer.
+- **My June analysis is one refactor old.** The buggy branches re-verified unchanged on `157ab4a` (2026-07-02), but line numbers moved (`update_configuration` is now at `api.py:353`) and the config service code has churned; Phase II re-maps everything from current code.
+- **Reproduction requires timing.** The bug only manifests on a never-run notebook in a fresh VS Code instance; the F5 repro script must be precise about ordering, and automated tests need to simulate the no-session state rather than the GUI timing.
 - **Fast-moving repo** (unchanged from Cycle 1): rebase frequently, open a draft PR early — the pattern that worked last time.
 
 ---
@@ -415,3 +424,4 @@ I am responsible for every line in my pull request. This table logs how I used A
 | 2026-06-24 | Claude Code | Tracing marimo's kernel to verify the fix is complete (reactive vs. explicit execution of disabled cells) and recording the merge | I read the maintainer's review and confirmed on GitHub that PR #603 was approved and merged (squash `619188e`) |
 | 2026-06-28 | Claude Code | Completing the journal — the Learnings & Reflections section and this AI usage log | I reviewed and edited these entries for accuracy and ownership |
 | 2026-07-01 | Claude Code | Cycle 2 Phase I: re-verifying every bench candidate's availability (state, assignees, linked PRs via issue timelines), confirming the #581 root cause is still present on current upstream `main`, and drafting the Cycle 2 Phase I section | I read issue #581 and @mscolnick's comment directly, checked the `errors.ts` branches on upstream `main` myself, and I make the final call on claiming the issue and posting the claim comment |
+| 2026-07-02 | Claude Code | Cycle 2 Phase I (final selection): re-pulling live state and full comment threads for all five bench issues, checking for competing claims and linked PRs, re-verifying the #491 root cause on upstream `main` (`api.py` no-session branch + `MarimoConfigResponseSchema` decode site), and rewriting the Phase I section after I switched the pick to #491 | I set the selection criterion (active maintainer responsiveness), chose #491 myself from the presented options, and I review and post the claim comment |

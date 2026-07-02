@@ -2,14 +2,14 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 Phase I — py-econometrics/pyfixest #1244 selected (2026-07-02)
+**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 — [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) opened against py-econometrics/pyfixest (2026-07-02), in review
 
 ## Contributions at a Glance
 
 | # | Issue | Project | Contribution | Status |
 |---|---|---|---|---|
 | 1 | [#154 — Extension runs cells marked as disabled](https://github.com/marimo-team/marimo-lsp/issues/154) | [marimo-team/marimo-lsp](https://github.com/marimo-team/marimo-lsp) (TypeScript / Python) | [PR #603](https://github.com/marimo-team/marimo-lsp/pull/603) — skip disabled cells in the execute-cells request | ✅ **Merged** 2026-06-24 (closed #154) |
-| 2 | [#1244 — did2s estimator: `ValueError` when first-stage fixed effects can't be estimated](https://github.com/py-econometrics/pyfixest/issues/1244) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | Early, informative detection of unestimable fixed-effect levels + regression test | 🔄 **In progress** — Phase I complete (selected 2026-07-02) |
+| 2 | [#1244 — did2s estimator: `ValueError` when first-stage fixed effects can't be estimated](https://github.com/py-econometrics/pyfixest/issues/1244) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) — early, informative error naming unestimable fixed-effect levels + regression test | 🔄 **In review** — PR opened 2026-07-02 |
 
 Cycle 1 (#154) is documented in full below, unchanged; Cycle 2 (#1244) documentation starts at [Cycle 2](#cycle-2).
 
@@ -418,6 +418,27 @@ ValueError: operands could not be broadcast together with shapes (190,) (200,) (
 - **Test**: regression test in `tests/test_did.py` with the synthetic always-treated panel, `pytest.raises` asserting the new error message — fails on current master (where the broadcast `ValueError` escapes instead).
 - **Alternative if the maintainer prefers graceful handling**: drop the affected rows with a warning before the second stage and keep all downstream arrays consistent — bigger change, touches `_did2s_vcov` array construction.
 
+## Cycle 2 — Phase III: Build (2026-07-02)
+
+Test-driven, on branch `fix-issue-1244-did2s-unestimated-fixef` (from upstream `27dfbba`):
+
+1. **RED** — regression test `tests/test_errors.py::test_did2s_unestimated_first_stage_fixef`: a 6×5 synthetic panel with an always-treated unit, `pytest.raises(ValueError, match="could not be estimated in the first stage")`. Watched it fail for the right reason: the current code raises the opaque broadcast `ValueError` (`shapes (25,) (30,)`), so the regex doesn't match.
+2. **GREEN** — guard in `_did2s_estimate` (`pyfixest/did/did2s.py`), immediately after `Y_hat = fit1.predict(newdata=data)`: if any prediction is `NaN`, diff each fixed-effect variable's levels in `data` against `fit1.fixef()`'s estimated levels and raise a `ValueError` naming the unestimable levels and explaining why (no not-yet-treated observations / collinearity) and what to do (drop the affected observations). Test passes; on the Phase II repro panel the message reads `… only: unit: ['1'] …`.
+3. **Changelog** — entry under "PyFixest 0.70.0 (In Development) → Bug Fixes".
+
+**Verification:** new test red→green; `pixi run test-py` 686 passed / 11 skipped (2 collection errors are a missing optional `torch` in the default env — pre-existing, also on `master`); `pixi run lint` passes all hooks except 2 pre-existing `mypy` errors in files this diff doesn't touch. One commit, tree green at the commit.
+
+## Cycle 2 — Phase IV: Submit and Iterate
+
+- **PR opened 2026-07-02**: [py-econometrics/pyfixest #1368](https://github.com/py-econometrics/pyfixest/pull/1368) — "Raise an informative error in did2s when first stage fixed effects cannot be estimated". Body: Why → root cause → what the PR does → design note (hard error per the reporter's preference, explicitly offering to rework to graceful handling if @s3alfisc prefers) → evidence → Closes #1244.
+- The maintainer had not yet replied to my claim comment when the PR went up; the PR's design note keeps that conversation open rather than presuming the answer.
+
+### Maintainer Feedback Log
+
+| Date | Who | Feedback | Action |
+|---|---|---|---|
+| — | — | *awaiting first review* | — |
+
 ---
 
 ## Learnings & Reflections
@@ -475,3 +496,4 @@ I am responsible for every line in my pull request. This table logs how I used A
 | 2026-06-28 | Claude Code | Completing the journal — the Learnings & Reflections section and this AI usage log | I reviewed and edited these entries for accuracy and ownership |
 | 2026-07-01 | Claude Code | Cycle 2 Phase I: re-verifying every bench candidate's availability (state, assignees, linked PRs via issue timelines), confirming the #581 root cause is still present on current upstream `main`, and drafting the Cycle 2 Phase I section | I read issue #581 and @mscolnick's comment directly, checked the `errors.ts` branches on upstream `main` myself, and I make the final call on claiming the issue and posting the claim comment |
 | 2026-07-02 | Claude Code | Cycle 2 Phase I (full selection): parsing the course's 24,774-row issue spreadsheet (including diagnosing its one-row URL-column misalignment), live-verifying ~360 sampled issues across 40 repos via the GitHub API (state, assignees, linked PRs, claim comments, maintainer response recency), surfacing candidate slates each round, and drafting the Phase I journal section | I set the selection criteria (unresolved, unclaimed, actively-responding maintainer, Python or frontend stack), personally made the call at every decision point across three rounds — including rejecting two of my earlier tentative picks — and I review and post the claim comment |
+| 2026-07-02 | Claude Code | Cycle 2 Phases II–IV: environment setup (pixi), reproducing #1244 with a synthetic always-treated-unit panel, writing the failing regression test, implementing the first-stage guard in `did2s.py`, changelog entry, running the test suite and lint, and drafting the commit message and PR #1368 body | I approved the claim comment and the PR submission, chose the hard-error design (matching the reporter's stated preference, with the graceful alternative offered to the maintainer in the PR), and reviewed the diff and PR text before it went up |

@@ -2,14 +2,15 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 — [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) opened against py-econometrics/pyfixest (2026-07-02), in review
+**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 — [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) in review; bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** into py-econometrics/pyfixest (2026-07-02)
 
 ## Contributions at a Glance
 
 | # | Issue | Project | Contribution | Status |
 |---|---|---|---|---|
 | 1 | [#154 — Extension runs cells marked as disabled](https://github.com/marimo-team/marimo-lsp/issues/154) | [marimo-team/marimo-lsp](https://github.com/marimo-team/marimo-lsp) (TypeScript / Python) | [PR #603](https://github.com/marimo-team/marimo-lsp/pull/603) — skip disabled cells in the execute-cells request | ✅ **Merged** 2026-06-24 (closed #154) |
-| 2 | [#1244 — did2s estimator: `ValueError` when first-stage fixed effects can't be estimated](https://github.com/py-econometrics/pyfixest/issues/1244) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) — early, informative error naming unestimable fixed-effect levels + regression test | 🔄 **In review** — PR opened 2026-07-02 |
+| 2 | [#1244 — did2s estimator: `ValueError` when first-stage fixed effects can't be estimated](https://github.com/py-econometrics/pyfixest/issues/1244) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) — early, informative error naming unestimable fixed-effect levels + regression test | 🔄 **In review** — opened 2026-07-02, all runnable CI green |
+| 2b | CI-blocking mypy errors (found while triaging PR #1368's checks) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) — fix two type errors surfaced by newer numpy stubs | ✅ **Merged** 2026-07-02 (approved by @leostimpfle; @s3alfisc added me to all-contributors) |
 
 Cycle 1 (#154) is documented in full below, unchanged; Cycle 2 (#1244) documentation starts at [Cycle 2](#cycle-2).
 
@@ -439,7 +440,9 @@ Test-driven, on branch `fix-issue-1244-did2s-unestimated-fixef` (from upstream `
 
 | Date | Who | Feedback | Action |
 |---|---|---|---|
-| — | — | *awaiting first review* | — |
+| 2026-07-02 | @leostimpfle | **Approved and merged the follow-up PR #1369** (mypy fixes) within hours of it opening | — |
+| 2026-07-02 | @s3alfisc | Asked the all-contributors bot to **add me to the project's contributors list** ("please add @lazizbekravshanov for code") on #1369 | Rebased #1368 onto the new `master` (now containing the mypy fix); pre-commit.ci re-ran **green**; regression test re-verified on the rebased branch |
+| — | — | *awaiting review of the main fix, PR #1368* | — |
 
 ---
 
@@ -472,6 +475,24 @@ Test-driven, on branch `fix-issue-1244-did2s-unestimated-fixef` (from upstream `
 
 PR #603 was **approved and merged by the maintainer on the first review pass** (2026-06-24), closing #154. The throughline across all four phases: *evidence beats assertion* — a failing-then-passing regression test, a wire format proven by execution, a diff audited line by line, and a fix validated against the kernel's own enforcement. The maintainer also invited a follow-up (surfacing the disabled state in the UI and allowing enable/disable), a natural next contribution.
 
+### Cycle 2 Additions (2026-07-02)
+
+**Technical skills gained**
+
+- A second dev-toolchain family: `pixi` (conda-based) driving a mixed Python/Rust package (maturin extension built transparently, no global Rust install), vs. Cycle 1's pnpm/just.
+- Econometrics-library internals: how Gardner's two-stage DiD estimator is wired (`did2s.py`), and why a first stage fit on a data subset makes predictions on the full data a NaN hazard.
+- pandas/numpy typing interplay: `np.sum(DataFrame, axis=0)` *returns* a pandas Series at runtime but is *typed* as `ndarray` — a class of bug where code and type stubs disagree, surfaced only when an unpinned hook dependency floats.
+- CI forensics on infrastructure I don't control: tracing a red pre-commit.ci check to a floating `numpy` in the hook's `additional_dependencies`, and proving pre-existence via a clean-`master` baseline run before claiming it.
+
+**Process learnings**
+
+- **Read the whole thread before claiming.** My claim-detection regex missed "happy to work on *these*" (vs "this"); a contributor had already spoken for my initial pick (#961). Pattern-matching isn't a substitute for reading.
+- **Maintainer responsiveness is measurable.** Sampling reply latency across a repo's issue tracker (and across candidate repos) turned "pick an active project" from a vibe into a criterion — and it paid off: both maintainer interactions this cycle resolved within hours.
+- **Keep the main diff atomic; ship the yak-shave separately.** Splitting the unrelated mypy fixes into #1369 got them merged the same day and turned my own PR's CI green — faster than arguing about an unrelated red X inside #1368.
+- **Front-load design questions.** The claim comment asked "hard error or graceful handling?" before any code existed; the PR's design note keeps that offer open instead of presuming the answer.
+
+**Outcome so far:** bonus PR #1369 **merged same-day** (approved by @leostimpfle; @s3alfisc added me to the project's all-contributors list). Main fix #1368 in review with all runnable CI green.
+
 ---
 
 ## Resources Used
@@ -499,3 +520,4 @@ I am responsible for every line in my pull request. This table logs how I used A
 | 2026-07-01 | Claude Code | Cycle 2 Phase I: re-verifying every bench candidate's availability (state, assignees, linked PRs via issue timelines), confirming the #581 root cause is still present on current upstream `main`, and drafting the Cycle 2 Phase I section | I read issue #581 and @mscolnick's comment directly, checked the `errors.ts` branches on upstream `main` myself, and I make the final call on claiming the issue and posting the claim comment |
 | 2026-07-02 | Claude Code | Cycle 2 Phase I (full selection): parsing the course's 24,774-row issue spreadsheet (including diagnosing its one-row URL-column misalignment), live-verifying ~360 sampled issues across 40 repos via the GitHub API (state, assignees, linked PRs, claim comments, maintainer response recency), surfacing candidate slates each round, and drafting the Phase I journal section | I set the selection criteria (unresolved, unclaimed, actively-responding maintainer, Python or frontend stack), personally made the call at every decision point across three rounds — including rejecting two of my earlier tentative picks — and I review and post the claim comment |
 | 2026-07-02 | Claude Code | Cycle 2 Phases II–IV: environment setup (pixi), reproducing #1244 with a synthetic always-treated-unit panel, writing the failing regression test, implementing the first-stage guard in `did2s.py`, changelog entry, running the test suite and lint, and drafting the commit message and PR #1368 body | I approved the claim comment and the PR submission, chose the hard-error design (matching the reporter's stated preference, with the graceful alternative offered to the maintainer in the PR), and reviewed the diff and PR text before it went up |
+| 2026-07-02 | Claude Code | CI triage on PR #1368 (tracing the red pre-commit.ci to pre-existing mypy errors via a clean-`master` baseline run), building the follow-up fix PR #1369 (including a 50-crosstab equivalence check for the `separation.py` change), rebasing #1368 after #1369 merged, and updating this journal | I approved opening #1369 as a separate PR to keep #1368 atomic, and reviewed all PR text and journal edits; the maintainers' merge of #1369 independently validated the fix |

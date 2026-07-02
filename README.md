@@ -386,6 +386,10 @@ Selection ran in three rounds on 2026-07-02, all availability claims verified li
 - **Design question is open.** Early informative error vs. graceful handling (drop unestimable levels and proceed) — the reporter is fine with an error; the maintainer hasn't said. Asked up front in the claim comment.
 - **New project, new toolchain.** First contribution outside marimo-lsp: fork, environment, contributing conventions, and CI norms all need discovery — budgeted as the first Phase II task, with the Mon 2026-07-06 deadline in view.
 
+### Phase I Outcome
+
+[Claim comment posted 2026-07-02](https://github.com/py-econometrics/pyfixest/issues/1244#issuecomment-4867926223): asks whether the issue is free (the maintainer had said he'd look himself), states the intended approach (detect unestimable first-stage fixed-effect levels early, regression test on synthetic collinear data first), and poses the hard-error-vs-graceful-handling design question. Awaiting @s3alfisc's reply; Phase II (environment setup + reproduction) can start in parallel since the repro work is useful under either design answer.
+
 ---
 
 ## Learnings & Reflections

@@ -540,7 +540,45 @@ Chose #829: on the list, in my warm repo, and uniquely robust to the refactor ch
 
 ### Phase I Outcome
 
-Selected #829 on 2026-07-08. Claim/scoping comment drafted (proposes a dedicated `test-py-nojit` pixi task wired into the weekly extended suite; notes JAX is now obsolete, so scope is numba-only; starts with the three core tests). *Awaiting go-ahead to post; link to be added here once posted.*
+Selected #829 on 2026-07-08. [Claim/scoping comment posted 2026-07-08](https://github.com/py-econometrics/pyfixest/issues/829#issuecomment-4920080664): proposes a dedicated `test-py-nojit` pixi task wired into the weekly extended suite, notes JAX is now obsolete (numba-only), and starts with `test_ses` / `test_demean` / `test_detect_singletons` (ritest optional). Awaiting @s3alfisc's reply; Phase II reproduction started in parallel since proving the coverage delta is useful regardless of his answer.
+
+## Cycle 3 — Phase II: Reproduce and Plan
+
+### Environment (2026-07-08)
+
+Reused the Cycle 2 fork/clone at `~/pet/pyfixest`; synced `master` to upstream `6ae0293b` and branched `issue-829-numba-nojit-coverage`. Toolchain unchanged (pixi, default env). Two setup gotchas worth recording for the PR — both from pyfixest's Rust extension colliding with coverage instrumentation:
+
+- The maturin **import hook** (installed by the `_setup` task) rebuilds the Rust extension on import, and that rebuild-under-coverage throws `ImportError: cannot load module more than once per process`. Resolved with a one-time `pixi run maturin develop`.
+- `--cov` scoped to a *submodule* (`--cov=pyfixest.core.detect_singletons`) re-inits the PyO3 native module and hits the same error. **Package-level `--cov=pyfixest` with `-n0`** (matching CI) works.
+
+### Reproduction — the coverage gap is real (2026-07-08)
+
+Ran the numba-backed demean test with JIT on vs. off, measuring `pyfixest/estimation/numba/demean_nb.py`:
+
+| Run | Coverage of `demean_nb.py` | Missed |
+|---|---|---|
+| **JIT enabled** (current CI) | **17%** | 48 / 58 stmts — the `@njit` bodies (lines 62–108) |
+| **`NUMBA_DISABLE_JIT=1`** | **97%** | 2 stmts (66, 103) |
+
+**+80 percentage points.** This is exactly the invisibility #829 describes: with JIT on, coverage sees the `def`/decorator lines but not the compiled bodies; with JIT off, the bodies execute as Python and register. Both runs pass the test (~6–7s each).
+
+### Findings that refine the scope (verified against current `master`)
+
+The 16-month-old issue named four target tests; the refactor has moved the ground under two:
+
+1. **`detect_singletons` is now Rust, not numba.** `pyfixest/core/detect_singletons.py` delegates to `pyfixest.core._core_impl._detect_singletons_rs`. `NUMBA_DISABLE_JIT` does nothing for it (Rust is invisible to Python coverage either way — its wrapper shows 90% in both modes). **Should be dropped from the no-jit target list.**
+2. **`demean_nb.py` is now imported only by `ritest.py`** in the live path (the main demeaning moved to Rust `core/`); it is still real numba and worth covering. `find_collinear_variables_nb.py` (1 `@njit`) and `nested_fixef_nb.py` (2 `@njit`) also remain.
+3. **No-jit is slow at scale.** Full `test_demean.py` under `NUMBA_DISABLE_JIT=1` exceeded 2 minutes (many parametrized backends run un-JIT'd); a single targeted numba case is ~6s. Confirms the plan: run a *targeted* set of numba tests, weekly-only.
+4. **JAX is gone** (from Phase I): numba only, no split.
+
+### Refined Plan
+
+- **New pixi task** `test-py-nojit`: runs the numba-exercising tests with `env = { NUMBA_DISABLE_JIT = "1" }`, `--cov=pyfixest --cov-report=xml`, `-n0` (or a safe worker count). Target tests: the numba parametrization of `test_demean`, plus tests hitting `find_collinear_variables_nb` / `nested_fixef_nb` / `ritest`. **Not** `test_detect_singletons` (Rust now).
+- **Wire into `extended_tests.yaml`** (weekly) as a second step, uploading coverage under a new codecov flag `tests-nojit`; keep it off per-commit CI and the fast `test-py` path.
+- **Prove the delta in the PR** with the `demean_nb` 17%→97% before/after.
+- **Confirm the target-test list with @s3alfisc** — flag that `detect_singletons` migrated to Rust (drop it) and confirm which numba modules he most wants surfaced.
+
+Plan is pending the maintainer's reply to the claim comment.
 
 ---
 

@@ -2,7 +2,7 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 complete — main fix [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) **merged** (2026-07-04) and bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** (2026-07-02) into py-econometrics/pyfixest · Cycle 3 in progress — [pyfixest #829](https://github.com/py-econometrics/pyfixest/issues/829) (numba no-jit coverage), Phase I (selected 2026-07-08)
+**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 complete — main fix [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) **merged** (2026-07-04) and bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** (2026-07-02) into py-econometrics/pyfixest · Cycle 3 in progress — [pyfixest #829](https://github.com/py-econometrics/pyfixest/issues/829) (numba no-jit coverage): Phase III build complete on branch, push/PR held for maintainer approval (2026-07-08)
 
 ## Contributions at a Glance
 
@@ -579,6 +579,27 @@ The 16-month-old issue named four target tests; the refactor has moved the groun
 - **Confirm the target-test list with @s3alfisc** — flag that `detect_singletons` migrated to Rust (drop it) and confirm which numba modules he most wants surfaced.
 
 Plan is pending the maintainer's reply to the claim comment.
+
+## Cycle 3 — Phase III: Build (2026-07-08)
+
+Branch `issue-829-numba-nojit-coverage` off upstream `6ae0293b`. The change is CI/tooling, so the diff is three files (local commit `fd550071`):
+
+| File | Change |
+|---|---|
+| `pyproject.toml` | New `test-py-nojit` pixi task: runs `test_ses` + `test_demean` with `env = { NUMBA_DISABLE_JIT = "1" }`, coverage → `coverage-nojit.xml` |
+| `.github/workflows/extended_tests.yaml` | Two steps in the weekly suite: run `test-py-nojit`, then upload its coverage under a new `tests-nojit` codecov flag (kept off per-commit CI) |
+| `.gitignore` | Ignore `coverage-nojit.xml` |
+
+`detect_singletons` is deliberately excluded (now Rust — see Phase II); JAX is dropped (obsolete — Phase I).
+
+**Verification (local, 2026-07-08):**
+
+- `pixi run lint` — all hooks green (ruff, mypy, GitHub-workflow validation, TOML/YAML checks). mypy is clean now that Cycle 2's #1369 landed.
+- Coverage delta reproduced on the numba path: `estimation/numba/demean_nb.py` **17% (JIT) → 97% (`NUMBA_DISABLE_JIT=1`)**, confirmed on the targeted numba test (run twice).
+- The full `test-py-nojit` set runs under no-jit with no failures (280 items, skips only); it is slow (several minutes), which is exactly why it belongs in the weekly suite rather than per-commit CI.
+- Setup note: a one-time `pixi run maturin develop` plus package-level `--cov=pyfixest -n0` were needed to avoid a maturin-hook / PyO3-vs-coverage import clash (documented in Phase II).
+
+**Status:** code complete and committed on the branch, tested green. Per the plan, the push to my fork and the pull request (Phase IV) are held until @s3alfisc confirms the approach on the claim comment — #829 changes a maintainer-owned CI surface, so I proposed before pushing. The PR title and body are pre-drafted and ready to open on approval.
 
 ---
 

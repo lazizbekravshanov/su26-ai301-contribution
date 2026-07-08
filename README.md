@@ -2,7 +2,7 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 complete — main fix [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) **merged** (2026-07-04) and bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** (2026-07-02) into py-econometrics/pyfixest
+**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 complete — main fix [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) **merged** (2026-07-04) and bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** (2026-07-02) into py-econometrics/pyfixest · Cycle 3 in progress — [pyfixest #829](https://github.com/py-econometrics/pyfixest/issues/829) (numba no-jit coverage), Phase I (selected 2026-07-08)
 
 ## Contributions at a Glance
 
@@ -11,8 +11,9 @@
 | 1 | [#154 — Extension runs cells marked as disabled](https://github.com/marimo-team/marimo-lsp/issues/154) | [marimo-team/marimo-lsp](https://github.com/marimo-team/marimo-lsp) (TypeScript / Python) | [PR #603](https://github.com/marimo-team/marimo-lsp/pull/603) — skip disabled cells in the execute-cells request | ✅ **Merged** 2026-06-24 (closed #154) |
 | 2 | [#1244 — did2s estimator: `ValueError` when first-stage fixed effects can't be estimated](https://github.com/py-econometrics/pyfixest/issues/1244) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) — early, informative error naming unestimable fixed-effect levels + regression test | ✅ **Merged** 2026-07-04 (merge commit `83fdcc5`, by @leostimpfle, after his predict-level refactor; closes #1244) |
 | 2b | CI-blocking mypy errors (found while triaging PR #1368's checks) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) — fix two type errors surfaced by newer numpy stubs | ✅ **Merged** 2026-07-02 (approved by @leostimpfle; @s3alfisc added me to all-contributors) |
+| 3 | [#829 — Add tests with `JIT=False` for numba coverage](https://github.com/py-econometrics/pyfixest/issues/829) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | Run numba-heavy tests with `NUMBA_DISABLE_JIT=1` in the weekly extended CI so codecov captures numba code paths (JAX half of the issue is now obsolete) | 🔄 **In progress** — Phase I, selected from the CodePath list 2026-07-08 |
 
-Cycle 1 (#154) is documented in full below, unchanged; Cycle 2 (#1244) documentation starts at [Cycle 2](#cycle-2).
+Cycle 1 (#154) is documented in full below, unchanged; Cycle 2 (#1244) documentation starts at [Cycle 2](#cycle-2); Cycle 3 (#829) starts at [Cycle 3](#cycle-3).
 
 ---
 
@@ -457,6 +458,89 @@ Screenshots captured from [github.com/py-econometrics/pyfixest/pull/1369](https:
 *Maintainer @s3alfisc adding me to the contributors list and sending thanks:*
 
 ![Maintainer thanks note on PR #1369](assets/pr1369-thanks.png)
+
+---
+
+# Cycle 3
+
+*Cycles 1 (#154 → PR #603) and 2 (#1244 → PR #1368, plus bonus #1369) are complete and documented above. Cycle 3 continues on py-econometrics/pyfixest — the same project as Cycle 2 — to build on standing already earned there (two merged PRs, added to the all-contributors list, working relationships with @s3alfisc and @leostimpfle). The issue is a distinct one, selected from the course's official issue list. This note supersedes the Cycle-2-era "Cycle 3 candidates" line above (the marimo-lsp bench): Cycle 3 stays on pyfixest.*
+
+## Cycle 3 — Project
+
+**Project:** py-econometrics/pyfixest (same as Cycle 2)
+**My fork:** `lazizbekravshanov/pyfixest`, already set up at `~/pet/pyfixest` from Cycle 2 (upstream remote in place)
+
+Continuing on pyfixest is deliberate: Cycle 2 earned trust here, and a third contribution where reviewers already know my work is worth more than a cold start elsewhere. Unlike Cycles 1–2 (behavioral/statistical bug fixes), this issue is infrastructure/testing — CI + coverage tooling — a different kind of contribution.
+
+## Cycle 3 — Phase I: Issue Selection
+
+### Issue
+
+[py-econometrics/pyfixest #829: Add tests with `JIT=False` to add `numba`, `JAX` to coverage reports](https://github.com/py-econometrics/pyfixest/issues/829)
+
+Labels: `help wanted`, `infrastructure`. Author: @s3alfisc (maintainer-created, 2025-03-08).
+
+> Selection note: chosen from the **course's official issue list** (`AI301 Issue Candidates.xlsx`). pyfixest appears on that list (26 rows), so this pick is both course-sanctioned and in a repo where I already have standing.
+
+### Why I Chose This Issue
+
+codecov under-reports pyfixest's coverage because numba `@njit`-compiled functions are invisible to `coverage.py` — JIT-compiled code never runs as traced Python bytecode. Running the numba-heavy tests once with `NUMBA_DISABLE_JIT=1` makes numba execute the pure-Python function bodies, so those lines register as covered. The maintainer wants these no-jit runs added to the weekly "extended" CI suite (created in #827, now merged).
+
+Three reasons it fits Cycle 3:
+
+1. **Refactor-robust.** pyfixest is mid-"Big Refactor" (#1337), with files moving between `estimation/`, `models/`, `api/`, and `core/`. Most older list issues are stale or risk colliding with that churn — I verified #852's year-old fix recipe is already obsolete. #829 targets CI config + test invocation, not the internals being reorganized, so it stays valid regardless.
+2. **Genuinely unstarted and still wanted.** Verified on current `master` (2026-07-08): `NUMBA_DISABLE_JIT` appears nowhere in the repo; the extended-suite workflow (`extended_tests.yaml`) and all four named test files exist; the issue is open, unassigned, no linked PR.
+3. **Different contribution type.** Build/CI/coverage tooling (pixi tasks, GitHub Actions, codecov flags) — a distinct skill from the statistical bug fixes of Cycles 1–2.
+
+### Scope Refinement (a finding worth recording)
+
+The 2025 issue names both `numba` **and** `JAX`. On current `master`, **JAX is gone** — not a pixi dependency, zero `jax` usage in the source (the demean-backend rewrite deprecated the JAX/scipy/cupy backends). So the JAX half is obsolete and the task is now numba-only. I'll flag this in the claim comment: it narrows the work and shows I read the current codebase, not just the old issue.
+
+The numba `@njit` code the target tests exercise lives in `pyfixest/core/detect_singletons.py`, `pyfixest/estimation/numba/{demean_nb,find_collinear_variables_nb,nested_fixef_nb}.py`, and `pyfixest/estimation/post_estimation/ritest.py`.
+
+### Definition of Done
+
+- **Claim posted / approach confirmed**: because this changes CI config and coverage reporting (a maintainer-owned surface), the claim comment proposes the approach and confirms scope before any code.
+- A dedicated pixi task (e.g. `test-py-nojit`) runs the numba-heavy tests with `NUMBA_DISABLE_JIT=1`, wired into `extended_tests.yaml` and uploaded to codecov under its own flag.
+- Coverage of the numba modules measurably **increases** in the no-jit run vs. the jitted run — shown with a before/after delta.
+- Project **test suite and lint pass**; the no-jit run itself is green.
+- A **pull request linked to #829** is opened, reviewed, and (target) merged.
+
+### How This Contribution Aligns With My Goals
+
+1. **CI / build-tooling literacy.** First contribution that is primarily GitHub Actions + pixi tasks + coverage instrumentation rather than library code.
+2. **Reading a codebase against a stale issue.** The issue is 16 months old; the value is verifying what's still true (numba alive, JAX gone, extended suite present) before writing anything — a core maintenance skill.
+3. **Compounding a relationship.** Third contribution to the same repo; turning one-off merges into recognized, ongoing involvement.
+
+### Issue Selection Checklist Notes
+
+1. **I understand the problem.** numba JIT code is invisible to codecov; running it with `NUMBA_DISABLE_JIT=1` in the weekly suite surfaces it. "Fixed" = the numba modules show real coverage.
+2. **Scope fits the time.** CI config + one pixi task + a few test invocations; no library-logic changes.
+3. **Matches my skills.** Python, pytest, pixi, CI — plus the numba modules already seen in Cycle 2.
+4. **Active and claimable.** Verified 2026-07-08: open, unassigned, no linked PR; maintainer active this week.
+5. **Helpful context.** The maintainer wrote the issue with the exact mechanism and named target tests; the extended suite (#827) it references is merged.
+6. **Setup already done.** Fork + pixi env from Cycle 2 still in place at `~/pet/pyfixest`.
+
+All six checks passed.
+
+### Other Directions I Evaluated (2026-07-08)
+
+- **Other pyfixest library bugs** — #1177 (`fixef()` on IV: real but "not super straightforward" per @s3alfisc, files mid-refactor), #1236 (predict NA handling: maintainer leans "by design", and #1368 already added the warning), #1041 (import crash: wontfix — pyfixest now requires Python ≥3.10, so the reporters' 3.9 can't even install). Thin and/or refactor-exposed.
+- **Sibling py-econometrics repo** — `maketables` has a clean "add support for library X" adapter pattern with unclaimed requests (scikit-learn #11, lifelines #10); same maintainer, but a cold codebase. Set aside to stay on the CodePath list per the course requirement.
+- **Course list, non-pyfixest Python repos** — BeeWare (briefcase/toga), music21, oppia, weblate: stable and friendly, but a cold start with no existing standing.
+
+Chose #829: on the list, in my warm repo, and uniquely robust to the refactor churn.
+
+### Risks I Noted
+
+- **Stale issue, moved code.** Mitigation: verified current state before selecting (numba alive, JAX obsolete, extended suite present); re-confirm at build time.
+- **No-jit runs are slow.** numba in pure-Python mode is much slower, and `test_ritest` is already slow even jitted. Mitigation: dedicated task in the *weekly* extended suite only (not per-commit CI); start with the three fast-enough tests (detect_singletons, demean, ses), treat ritest as optional.
+- **Coverage plumbing.** Getting codecov to accept a new flag cleanly. Mitigation: model the new step on the existing `tests-extended` upload; prove the coverage delta locally first.
+- **Maintainer-owned surface (CI).** Changing CI config warrants confirmation. Mitigation: the claim comment proposes the approach (dedicated task, own flag, JAX dropped) before code.
+
+### Phase I Outcome
+
+Selected #829 on 2026-07-08. Claim/scoping comment drafted (proposes a dedicated `test-py-nojit` pixi task wired into the weekly extended suite; notes JAX is now obsolete, so scope is numba-only; starts with the three core tests). *Awaiting go-ahead to post; link to be added here once posted.*
 
 ---
 

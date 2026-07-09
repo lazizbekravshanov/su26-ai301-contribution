@@ -2,7 +2,7 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 complete — main fix [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) **merged** (2026-07-04) and bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** (2026-07-02) into py-econometrics/pyfixest · Cycle 3 in progress — [pyfixest #829](https://github.com/py-econometrics/pyfixest/issues/829) (numba no-jit coverage): Phase IV — [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) opened 2026-07-08, **all CI green**, awaiting review
+**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 complete — main fix [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) **merged** (2026-07-04) and bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** (2026-07-02) into py-econometrics/pyfixest · Cycle 3 in progress — [pyfixest #829](https://github.com/py-econometrics/pyfixest/issues/829) (numba no-jit coverage): Phase IV — [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) opened 2026-07-08, **all CI green**, awaiting review · Cycle 4 in progress — [OCS #2979](https://github.com/dimagi/open-chat-studio/issues/2979) (MiniMax chat+voice): Phase III — chat provider built & green (TDD), voice next, awaiting maintainer scope reply (2026-07-09)
 
 ## Contributions at a Glance
 
@@ -12,6 +12,7 @@
 | 2 | [#1244 — did2s estimator: `ValueError` when first-stage fixed effects can't be estimated](https://github.com/py-econometrics/pyfixest/issues/1244) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) — early, informative error naming unestimable fixed-effect levels + regression test | ✅ **Merged** 2026-07-04 (merge commit `83fdcc5`, by @leostimpfle, after his predict-level refactor; closes #1244) |
 | 2b | CI-blocking mypy errors (found while triaging PR #1368's checks) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) — fix two type errors surfaced by newer numpy stubs | ✅ **Merged** 2026-07-02 (approved by @leostimpfle; @s3alfisc added me to all-contributors) |
 | 3 | [#829 — Add tests with `JIT=False` for numba coverage](https://github.com/py-econometrics/pyfixest/issues/829) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) — `test-py-nojit` task runs numba tests with `NUMBA_DISABLE_JIT=1` in the weekly extended CI so codecov captures numba code paths (JAX obsolete; `detect_singletons` now Rust, excluded) | 🔄 **In review** — PR #1385 opened 2026-07-08, all CI green; awaiting @s3alfisc |
+| 4 | [#2979 — MiniMax integration for chat and voice](https://github.com/dimagi/open-chat-studio/issues/2979) | [dimagi/open-chat-studio](https://github.com/dimagi/open-chat-studio) (Python / Django) | Add MiniMax as an OpenAI-compatible LLM (chat) provider + a voice (TTS) provider, following OCS's existing provider patterns | 🔄 **In progress** — Phase III; chat provider built & green (TDD), voice next; claim/scope comment posted 2026-07-09 |
 
 Cycle 1 (#154) is documented in full below, unchanged; Cycle 2 (#1244) documentation starts at [Cycle 2](#cycle-2); Cycle 3 (#829) starts at [Cycle 3](#cycle-3).
 
@@ -612,6 +613,70 @@ Branch `issue-829-numba-nojit-coverage` off upstream `6ae0293b`. The change is C
 ![PR #1385 opened](assets/pr1385-opened.png)
 
 **What we're waiting on:** @s3alfisc's (or @leostimpfle's) review of PR #1385 and their answer to the scope questions raised on [#829](https://github.com/py-econometrics/pyfixest/issues/829#issuecomment-4920080664) — confirm the numba-only scope, the `detect_singletons`-dropped decision, and whether to widen the target-test set. Ready to push revisions on feedback.
+
+---
+
+# Cycle 4
+
+*Cycles 1–3 above. Cycle 4 moves to the AI/ML track (my stated interest) with a pure-Python LLM-platform contribution, selected from the CodePath list, after ruling out several farmed or compute-heavy AI/ML options (see Phase I).*
+
+## Cycle 4 — Project
+
+**Project:** [dimagi/open-chat-studio](https://github.com/dimagi/open-chat-studio) (OCS) — a Django platform for building and deploying LLM chatbots.
+**My fork:** `lazizbekravshanov/open-chat-studio` (cloned to `~/pet/open-chat-studio`, upstream remote set).
+
+OCS is pure-Python Django and calls LLM/voice provider APIs, so contributions are code logic with no model-training compute — the same shape that worked in Cycles 2–3. Very active repo (same-day merges from maintainers @snopoke, @SmittieC, and external contributors).
+
+## Cycle 4 — Phase I: Issue Selection
+
+### Issue
+[dimagi/open-chat-studio #2979: `[feat]` MiniMax integration for chat and voice](https://github.com/dimagi/open-chat-studio/issues/2979). Label: `good first issue`. The issue is a stub (no body), so scoping it concretely was itself Phase I work.
+
+### Why I Chose This Issue
+I wanted an AI/ML-track, pure-Python, compute-free contribution. [MiniMax](https://www.minimax.io/) is an LLM + voice provider; adding it to OCS is a real feature that follows the platform's existing provider pattern. Verified genuinely unclaimed: open, unassigned, no claim language in comments, no linked/draft PR.
+
+### Other Directions Ruled Out (full verification, 2026-07-08/09)
+Popular AI/ML good-first-issues are heavily farmed or mismatched — verifying each (state, assignee, claim language, **linked PRs**, and language) mattered:
+- **onnx #7053** (float16 printer) — my first pick; disqualified on verification: the fix is **C++** (`printer.cc`, per maintainer @justinchuby) and a Copilot-bot PR (#7063) already addresses it.
+- **scikit-learn #29521** — three would-be contributors already commented intent.
+- **vllm** good-first-issues — closed/grabbed (repo moves too fast).
+- **mteb** (#1997, #1738) — pure-Python but every issue needs running embedding models (a 23 GB model / multi-model data-gen) — a GPU/compute barrier.
+- **OCS #3385** — a fellow AI301 student already commented intent; that area is being actively developed by others.
+
+### Definition of Done
+- Claim/scope comment posted (stub issue → propose concrete scope, confirm before building).
+- MiniMax added as (1) an LLM chat provider and (2) a voice (TTS) provider, following OCS's existing provider patterns.
+- Unit tests (mocked, matching `test_llm_service.py` / `test_voice_providers.py`); lint + migrations clean.
+- PR linked to #2979, reviewed, target merged.
+
+### Phase I Outcome
+[Claim/scope comment posted 2026-07-09](https://github.com/dimagi/open-chat-studio/issues/2979#issuecomment-4921548981): I read the provider architecture first, then proposed a concrete split — chat via the OpenAI-compatible `LlmProviderTypes` pattern, voice via a `MinimaxSpeechService` modeled on ElevenLabs/intron — and asked three scoping questions (one PR vs split; which default models; test credentials). Verified MiniMax's API shapes before posting (chat = OpenAI-compatible `https://api.minimax.io/v1`; voice = custom `/v1/t2a_v2`, Bearer auth).
+
+## Cycle 4 — Phase II: Reproduce and Plan
+
+### Environment Setup (2026-07-09)
+Forked + cloned OCS; remotes wired (origin=fork, upstream=dimagi). Stack: **uv + Python 3.13 + Django + Postgres (pgvector) + Redis**. Steps: `uv sync` (large ML dep tree — one download stalled, retried with capped concurrency), `brew install libmagic` (a `python-magic` system dependency), `.env` from `.env.example`, Docker services via `docker-compose-dev.yml`.
+
+**Env gotcha worth recording:** host port 5432 was already held by another project's Postgres (`covenant-db`), so OCS's DB container couldn't publish its port and tests failed auth against the wrong server. Resolved non-invasively with a local `!override` compose file mapping OCS's DB to **5434** (and `.env` pointed there) — without disturbing the other project.
+
+Baseline smoke test green: `test_voice_providers.py` **34 passed**.
+
+### Plan (architecture mapped from the code)
+- **Chat (LLM):** `LlmProviderTypes.minimax` with `{"openai_api_base": "https://api.minimax.io/v1"}`; both `form_cls` and `_build_llm_service` route it through `OpenAIGenericConfigForm` / `OpenAIGenericService` (identical to groq/perplexity); seed default models; migration for the new choice.
+- **Voice (TTS):** `VoiceProviderType.minimax` + a `MinimaxSpeechService(SpeechService)` implementing `_synthesize_voice → SynthesizedAudio` against `/v1/t2a_v2`, wired into `VoiceProvider.get_speech_service`; seed MiniMax's fixed voice catalogue via a `build_minimax_synthetic_voices` helper in `run_post_save_hook` — the **intron** pattern (MiniMax has a fixed voice list, so a static seed fits better than ElevenLabs' API sync); config form + `form_cls` case.
+
+## Cycle 4 — Phase III: Build (2026-07-09)
+
+**Increment 1 — chat provider (complete, TDD).** Branch `issue-2979-minimax-integration`, commit `b853916`:
+1. **RED** — added MiniMax to the OpenAI-compatible parametrized tests in `test_llm_service.py` plus a dedicated `test_minimax_is_openai_compatible_chat_provider` asserting the base URL, `OpenAIGenericService` routing, `_type == "minimax"`, and no Responses API. Failed at collection (`LlmProviderTypes` had no `minimax`).
+2. **GREEN** — added the enum entry, the `groq | perplexity | minimax` cases in `form_cls` + `_build_llm_service`, `"minimax"` default models (`MiniMax-M2` default + `MiniMax-Text-01`), and the choices migration `0061`.
+3. **Verify** — provider suite **70 passed**; `ruff` clean; `makemigrations --check` clean.
+
+**Increment 2 — voice (TTS) provider:** next, per the plan above.
+
+### What we're waiting on / next
+- **Maintainer reply on #2979** to the three scope questions (one PR vs split; default models; test creds). The chat increment is built regardless; the PR shape (single vs chat-then-voice) follows their answer.
+- Then: build the voice increment and open the PR(s) linked to #2979.
 
 ---
 

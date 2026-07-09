@@ -697,6 +697,10 @@ Baseline smoke test green: `test_voice_providers.py` **34 passed**.
 
 *Note on approvals: at the time of writing, no formal human "Approved" review has landed on #3800 yet (only an automated CodeScene health check). This section will be updated with the maintainer's review/approval when it arrives.*
 
+### Review response — chat PR #3800 (2026-07-09)
+
+CodeRabbit (the repo's AI reviewer) flagged that the new MiniMax default models in `default_models.py` only affect *future* syncs, so existing databases would miss them. I verified this against the repo's convention before acting: prior model additions ship a data migration calling `llm_model_migration()` (e.g. `0058`/`0059` for Claude, `0052` for Voyage embeddings), while the `AlterField` choices migration alone doesn't backfill. The bot was right and convention-consistent, so I added `0062_seed_minimax_models` (a `RunPython` via `llm_model_migration()`), verified locally that it seeds all three MiniMax model rows, and [replied on the PR](https://github.com/dimagi/open-chat-studio/pull/3800#issuecomment-4927915638). Pushed to #3800.
+
 ### Voice (TTS) increment — built, PR held (2026-07-09)
 
 Built the second increment on a separate branch `issue-2979-minimax-voice` (off upstream `main`, per the maintainer's 2-PR preference), commit `814af45`:

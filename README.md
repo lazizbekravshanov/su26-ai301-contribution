@@ -2,7 +2,7 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 complete — main fix [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) **merged** (2026-07-04) and bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** (2026-07-02) into py-econometrics/pyfixest · Cycle 3 in progress — [pyfixest #829](https://github.com/py-econometrics/pyfixest/issues/829) (numba no-jit coverage): Phase IV — [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) opened 2026-07-08, CI running, awaiting review
+**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 complete — main fix [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) **merged** (2026-07-04) and bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** (2026-07-02) into py-econometrics/pyfixest · Cycle 3 in progress — [pyfixest #829](https://github.com/py-econometrics/pyfixest/issues/829) (numba no-jit coverage): Phase IV — [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) opened 2026-07-08, **all CI green**, awaiting review
 
 ## Contributions at a Glance
 
@@ -11,7 +11,7 @@
 | 1 | [#154 — Extension runs cells marked as disabled](https://github.com/marimo-team/marimo-lsp/issues/154) | [marimo-team/marimo-lsp](https://github.com/marimo-team/marimo-lsp) (TypeScript / Python) | [PR #603](https://github.com/marimo-team/marimo-lsp/pull/603) — skip disabled cells in the execute-cells request | ✅ **Merged** 2026-06-24 (closed #154) |
 | 2 | [#1244 — did2s estimator: `ValueError` when first-stage fixed effects can't be estimated](https://github.com/py-econometrics/pyfixest/issues/1244) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) — early, informative error naming unestimable fixed-effect levels + regression test | ✅ **Merged** 2026-07-04 (merge commit `83fdcc5`, by @leostimpfle, after his predict-level refactor; closes #1244) |
 | 2b | CI-blocking mypy errors (found while triaging PR #1368's checks) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) — fix two type errors surfaced by newer numpy stubs | ✅ **Merged** 2026-07-02 (approved by @leostimpfle; @s3alfisc added me to all-contributors) |
-| 3 | [#829 — Add tests with `JIT=False` for numba coverage](https://github.com/py-econometrics/pyfixest/issues/829) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) — `test-py-nojit` task runs numba tests with `NUMBA_DISABLE_JIT=1` in the weekly extended CI so codecov captures numba code paths (JAX obsolete; `detect_singletons` now Rust, excluded) | 🔄 **In review** — PR #1385 opened 2026-07-08, CI running; awaiting @s3alfisc |
+| 3 | [#829 — Add tests with `JIT=False` for numba coverage](https://github.com/py-econometrics/pyfixest/issues/829) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) — `test-py-nojit` task runs numba tests with `NUMBA_DISABLE_JIT=1` in the weekly extended CI so codecov captures numba code paths (JAX obsolete; `detect_singletons` now Rust, excluded) | 🔄 **In review** — PR #1385 opened 2026-07-08, all CI green; awaiting @s3alfisc |
 
 Cycle 1 (#154) is documented in full below, unchanged; Cycle 2 (#1244) documentation starts at [Cycle 2](#cycle-2); Cycle 3 (#829) starts at [Cycle 3](#cycle-3).
 
@@ -605,7 +605,7 @@ Branch `issue-829-numba-nojit-coverage` off upstream `6ae0293b`. The change is C
 
 - **PR opened 2026-07-08**: [py-econometrics/pyfixest #1385](https://github.com/py-econometrics/pyfixest/pull/1385) — "Add a no-JIT test run so codecov captures numba coverage" (`Closes #829`). Body: Why (numba JIT code invisible to coverage) → What (the `test-py-nojit` task + weekly-suite step + new `tests-nojit` flag) → Evidence (`demean_nb` 17% → 100%; full run 274 passed / 6 skipped) → Scope notes (JAX dropped, `detect_singletons` excluded as Rust) → offer to widen the target set.
 - Opened proactively rather than waiting for the claim-comment reply (same as Cycle 2's #1368) — the PR itself carries the approach and keeps the scope questions open for @s3alfisc.
-- **CI (2026-07-08)**: the full check matrix (Python 3.10/3.14 × macOS/Linux, R suites, Build Docs, pre-commit.ci) started on open. The diff touches only a new pixi task, the weekly workflow (not PR-triggered), and `.gitignore`, so it doesn't change the per-commit test path.
+- **CI (2026-07-08): all green.** The full check matrix passed — Python 3.10/3.14 × macOS/Linux, all four R suites, Build Docs, Merge Coverage, codecov/patch, and pre-commit.ci (Publish Docs skipped, master-only). PR is `MERGEABLE`. As expected, since the diff touches only a new pixi task, the weekly workflow (not PR-triggered), and `.gitignore`, it doesn't change the per-commit test path.
 
 ### Proof — PR #1385 opened (Phase IV)
 

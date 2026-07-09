@@ -612,7 +612,11 @@ Branch `issue-829-numba-nojit-coverage` off upstream `6ae0293b`. The change is C
 
 ![PR #1385 opened](assets/pr1385-opened.png)
 
-**What we're waiting on:** @s3alfisc's (or @leostimpfle's) review of PR #1385 and their answer to the scope questions raised on [#829](https://github.com/py-econometrics/pyfixest/issues/829#issuecomment-4920080664) — confirm the numba-only scope, the `detect_singletons`-dropped decision, and whether to widen the target-test set. Ready to push revisions on feedback.
+**Maintainer response (2026-07-09).** @s3alfisc replied on PR #1385: *"Amazing, thank you! I will review and merge after work this evening =)"* — positive reception, merge intended. (No formal "Approved" review or merge at the time of writing; will update on merge.)
+
+![Maintainer @s3alfisc's comment on PR #1385](assets/pr1385-maintainer-comment.png)
+
+**What we're waiting on:** @s3alfisc's review + merge of PR #1385, as promised in the comment above.
 
 ---
 
@@ -682,6 +686,16 @@ Baseline smoke test green: `test_voice_providers.py` **34 passed**.
 - **Chat PR opened:** [dimagi/open-chat-studio #3800](https://github.com/dimagi/open-chat-studio/pull/3800) — "feat: add MiniMax as an OpenAI-compatible LLM (chat) provider" (+49/−2, 4 files). Body: what/how (OpenAI-compatible wiring like Groq/Perplexity) → testing (mocked, 70 passed) → notes (Responses API disabled; voice PR to follow). Links #2979.
 - Local-only files kept out of the branch (`.env`, the port-5434 compose override).
 - CI (CodeScene, CodeRabbit) running on open.
+
+**Proof — maintainer engagement on #2979.** @snopoke answered the scope questions (*"Please do 2 PRs"*, use the current models from the models-intro page, no shared test account), green-lit the claim, and after `.take` GitHub assigned the issue to me:
+
+![Maintainer @snopoke's scope reply and issue assignment on #2979](assets/ocs2979-maintainer-reply.png)
+
+**Chat PR #3800 (opened, in review):**
+
+![MiniMax chat PR #3800](assets/ocs3800-chat-pr.png)
+
+*Note on approvals: at the time of writing, no formal human "Approved" review has landed on #3800 yet (only an automated CodeScene health check). This section will be updated with the maintainer's review/approval when it arrives.*
 
 ### What we're waiting on / next
 - **Review of chat PR #3800.**

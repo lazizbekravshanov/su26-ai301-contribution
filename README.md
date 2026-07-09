@@ -2,7 +2,7 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 complete — main fix [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) **merged** (2026-07-04) and bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** (2026-07-02) into py-econometrics/pyfixest · Cycle 3 in progress — [pyfixest #829](https://github.com/py-econometrics/pyfixest/issues/829) (numba no-jit coverage): Phase IV — [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) opened 2026-07-08, **all CI green**, awaiting review · Cycle 4 in progress — [OCS #2979](https://github.com/dimagi/open-chat-studio/issues/2979) (MiniMax chat+voice): Phase III — chat provider built & green (TDD), voice next, awaiting maintainer scope reply (2026-07-09)
+**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 complete — main fix [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) **merged** (2026-07-04) and bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** (2026-07-02) into py-econometrics/pyfixest · Cycle 3 in progress — [pyfixest #829](https://github.com/py-econometrics/pyfixest/issues/829) (numba no-jit coverage): Phase IV — [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) opened 2026-07-08, **all CI green**, awaiting review · Cycle 4 in progress — [OCS #2979](https://github.com/dimagi/open-chat-studio/issues/2979) (MiniMax chat+voice): Phase IV — chat [PR #3800](https://github.com/dimagi/open-chat-studio/pull/3800) opened 2026-07-09 (claimed via `.take`); voice PR next
 
 ## Contributions at a Glance
 
@@ -12,7 +12,7 @@
 | 2 | [#1244 — did2s estimator: `ValueError` when first-stage fixed effects can't be estimated](https://github.com/py-econometrics/pyfixest/issues/1244) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) — early, informative error naming unestimable fixed-effect levels + regression test | ✅ **Merged** 2026-07-04 (merge commit `83fdcc5`, by @leostimpfle, after his predict-level refactor; closes #1244) |
 | 2b | CI-blocking mypy errors (found while triaging PR #1368's checks) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) — fix two type errors surfaced by newer numpy stubs | ✅ **Merged** 2026-07-02 (approved by @leostimpfle; @s3alfisc added me to all-contributors) |
 | 3 | [#829 — Add tests with `JIT=False` for numba coverage](https://github.com/py-econometrics/pyfixest/issues/829) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) — `test-py-nojit` task runs numba tests with `NUMBA_DISABLE_JIT=1` in the weekly extended CI so codecov captures numba code paths (JAX obsolete; `detect_singletons` now Rust, excluded) | 🔄 **In review** — PR #1385 opened 2026-07-08, all CI green; awaiting @s3alfisc |
-| 4 | [#2979 — MiniMax integration for chat and voice](https://github.com/dimagi/open-chat-studio/issues/2979) | [dimagi/open-chat-studio](https://github.com/dimagi/open-chat-studio) (Python / Django) | Add MiniMax as an OpenAI-compatible LLM (chat) provider + a voice (TTS) provider, following OCS's existing provider patterns | 🔄 **In progress** — Phase III; chat provider built & green (TDD), voice next; claim/scope comment posted 2026-07-09 |
+| 4 | [#2979 — MiniMax integration for chat and voice](https://github.com/dimagi/open-chat-studio/issues/2979) | [dimagi/open-chat-studio](https://github.com/dimagi/open-chat-studio) (Python / Django) | Chat: [PR #3800](https://github.com/dimagi/open-chat-studio/pull/3800) — MiniMax as an OpenAI-compatible LLM provider (+ voice/TTS PR to follow) | 🔄 **In review** — chat PR #3800 opened 2026-07-09 (assigned via `.take`); maintainer confirmed 2-PR split |
 
 Cycle 1 (#154) is documented in full below, unchanged; Cycle 2 (#1244) documentation starts at [Cycle 2](#cycle-2); Cycle 3 (#829) starts at [Cycle 3](#cycle-3).
 
@@ -672,11 +672,20 @@ Baseline smoke test green: `test_voice_providers.py` **34 passed**.
 2. **GREEN** — added the enum entry, the `groq | perplexity | minimax` cases in `form_cls` + `_build_llm_service`, `"minimax"` default models (`MiniMax-M2` default + `MiniMax-Text-01`), and the choices migration `0061`.
 3. **Verify** — provider suite **70 passed**; `ruff` clean; `makemigrations --check` clean.
 
-**Increment 2 — voice (TTS) provider:** next, per the plan above.
+**Maintainer scope reply (2026-07-09).** @snopoke answered all three questions: (1) **two PRs** (chat first, then voice); (2) seed the **current** models from MiniMax's models-intro page; (3) no shared test account → mocked unit tests only; and green-lit the claim (`.take`). Acting on (2), I checked the live page and found my initial seeds were stale (`MiniMax-Text-01` is no longer current) — updated the defaults to the current family: **`MiniMax-M3`** (default, 1M context), **`MiniMax-M2.7`**, **`MiniMax-M2`** (both 200k). Tests still green (31 passed), no new migration (model names live in Python, not the DB enum).
+
+**Increment 2 — voice (TTS) provider:** next, on a separate branch/PR per the maintainer's 2-PR preference.
+
+## Cycle 4 — Phase IV: Submit and Iterate (chat)
+
+- Claimed the issue via `.take` (2026-07-09); GitHub assigned it to me.
+- **Chat PR opened:** [dimagi/open-chat-studio #3800](https://github.com/dimagi/open-chat-studio/pull/3800) — "feat: add MiniMax as an OpenAI-compatible LLM (chat) provider" (+49/−2, 4 files). Body: what/how (OpenAI-compatible wiring like Groq/Perplexity) → testing (mocked, 70 passed) → notes (Responses API disabled; voice PR to follow). Links #2979.
+- Local-only files kept out of the branch (`.env`, the port-5434 compose override).
+- CI (CodeScene, CodeRabbit) running on open.
 
 ### What we're waiting on / next
-- **Maintainer reply on #2979** to the three scope questions (one PR vs split; default models; test creds). The chat increment is built regardless; the PR shape (single vs chat-then-voice) follows their answer.
-- Then: build the voice increment and open the PR(s) linked to #2979.
+- **Review of chat PR #3800.**
+- **Build the voice (TTS) increment** on a fresh branch → second PR (the `MinimaxSpeechService` + voice seeding, modeled on ElevenLabs/intron).
 
 ---
 

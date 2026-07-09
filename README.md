@@ -697,9 +697,22 @@ Baseline smoke test green: `test_voice_providers.py` **34 passed**.
 
 *Note on approvals: at the time of writing, no formal human "Approved" review has landed on #3800 yet (only an automated CodeScene health check). This section will be updated with the maintainer's review/approval when it arrives.*
 
+### Voice (TTS) increment — built, PR held (2026-07-09)
+
+Built the second increment on a separate branch `issue-2979-minimax-voice` (off upstream `main`, per the maintainer's 2-PR preference), commit `814af45`:
+
+- `VoiceProviderType.minimax` + `MinimaxVoiceConfigForm` (API key, Group ID, model) + dispatch to a new `MinimaxSpeechService`.
+- `MinimaxSpeechService` calls MiniMax's **synchronous** `/v1/t2a_v2` endpoint (GroupId query param + Bearer auth), decodes the **hex-encoded** audio, and raises `AudioSynthesizeException` on an application-level `base_resp` error — modeled on the ElevenLabs (direct-return) and Intron (custom-HTTP) providers.
+- `SyntheticVoice.MiniMax` service + a curated static seed of MiniMax's built-in English system voices (the intron pattern), seeded in `run_post_save_hook`.
+- Migrations for the new provider-type and service choices.
+
+**Reconciling with in-repo tests.** While building, a set of MiniMax voice tests appeared in `test_voice_providers.py` (added alongside this work). I treated them as the spec and reconciled my implementation to them rather than overwriting — importantly, they encode that MiniMax T2A needs a **`GroupId` query parameter** (which my first pass had missed), so I added the `minimax_group_id` config field and the query param. Final: **40 passed** in the voice suite, **589 passed** across `service_providers` (no regressions), `ruff` clean, `makemigrations --check` clean.
+
+**Why the PR is held (not yet opened):** (1) the maintainer asked for chat first, then voice; and (2) both branches independently created `service_providers/migrations/0061_*`, so once chat #3800 merges this branch's migration must renumber to `0062` — I'll rebase and renumber then, and open the voice PR. Branch is pushed and ready.
+
 ### What we're waiting on / next
-- **Review of chat PR #3800.**
-- **Build the voice (TTS) increment** on a fresh branch → second PR (the `MinimaxSpeechService` + voice seeding, modeled on ElevenLabs/intron).
+- **Review/merge of chat PR #3800.**
+- On chat merge: **rebase the voice branch** (renumber the migration) and **open the voice PR** linked to #2979.
 
 ---
 

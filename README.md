@@ -2,7 +2,7 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 complete — main fix [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) **merged** (2026-07-04) and bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** (2026-07-02) into py-econometrics/pyfixest · Cycle 3 in progress — [pyfixest #829](https://github.com/py-econometrics/pyfixest/issues/829) (numba no-jit coverage): Phase IV — [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) opened 2026-07-08, **all CI green**, awaiting review · Cycle 4 in progress — [OCS #2979](https://github.com/dimagi/open-chat-studio/issues/2979) (MiniMax chat+voice): Phase IV — chat [PR #3800](https://github.com/dimagi/open-chat-studio/pull/3800) opened 2026-07-09 (claimed via `.take`); voice PR next
+**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 complete — main fix [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) **merged** (2026-07-04) and bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** (2026-07-02) into py-econometrics/pyfixest · Cycle 3 in progress — [pyfixest #829](https://github.com/py-econometrics/pyfixest/issues/829) (numba no-jit coverage): Phase IV — [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) opened 2026-07-08, **all CI green**, awaiting review · Cycle 4 in progress — [OCS #2979](https://github.com/dimagi/open-chat-studio/issues/2979) (MiniMax chat+voice): Phase IV — chat [PR #3800](https://github.com/dimagi/open-chat-studio/pull/3800) + voice [PR #3801](https://github.com/dimagi/open-chat-studio/pull/3801) both opened 2026-07-09 (issue claimed via `.take`), awaiting review
 
 ## Contributions at a Glance
 
@@ -12,7 +12,7 @@
 | 2 | [#1244 — did2s estimator: `ValueError` when first-stage fixed effects can't be estimated](https://github.com/py-econometrics/pyfixest/issues/1244) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) — early, informative error naming unestimable fixed-effect levels + regression test | ✅ **Merged** 2026-07-04 (merge commit `83fdcc5`, by @leostimpfle, after his predict-level refactor; closes #1244) |
 | 2b | CI-blocking mypy errors (found while triaging PR #1368's checks) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) — fix two type errors surfaced by newer numpy stubs | ✅ **Merged** 2026-07-02 (approved by @leostimpfle; @s3alfisc added me to all-contributors) |
 | 3 | [#829 — Add tests with `JIT=False` for numba coverage](https://github.com/py-econometrics/pyfixest/issues/829) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) — `test-py-nojit` task runs numba tests with `NUMBA_DISABLE_JIT=1` in the weekly extended CI so codecov captures numba code paths (JAX obsolete; `detect_singletons` now Rust, excluded) | 🔄 **In review** — PR #1385 opened 2026-07-08, all CI green; awaiting @s3alfisc |
-| 4 | [#2979 — MiniMax integration for chat and voice](https://github.com/dimagi/open-chat-studio/issues/2979) | [dimagi/open-chat-studio](https://github.com/dimagi/open-chat-studio) (Python / Django) | Chat: [PR #3800](https://github.com/dimagi/open-chat-studio/pull/3800) — MiniMax as an OpenAI-compatible LLM provider (+ voice/TTS PR to follow) | 🔄 **In review** — chat PR #3800 opened 2026-07-09 (assigned via `.take`); maintainer confirmed 2-PR split |
+| 4 | [#2979 — MiniMax integration for chat and voice](https://github.com/dimagi/open-chat-studio/issues/2979) | [dimagi/open-chat-studio](https://github.com/dimagi/open-chat-studio) (Python / Django) | Chat: [PR #3800](https://github.com/dimagi/open-chat-studio/pull/3800) — OpenAI-compatible LLM provider · Voice: [PR #3801](https://github.com/dimagi/open-chat-studio/pull/3801) — MiniMax T2A (TTS) provider | 🔄 **In review** — both PRs opened 2026-07-09 (issue assigned via `.take`); maintainer confirmed 2-PR split |
 
 Cycle 1 (#154) is documented in full below, unchanged; Cycle 2 (#1244) documentation starts at [Cycle 2](#cycle-2); Cycle 3 (#829) starts at [Cycle 3](#cycle-3).
 
@@ -701,22 +701,22 @@ Baseline smoke test green: `test_voice_providers.py` **34 passed**.
 
 CodeRabbit (the repo's AI reviewer) flagged that the new MiniMax default models in `default_models.py` only affect *future* syncs, so existing databases would miss them. I verified this against the repo's convention before acting: prior model additions ship a data migration calling `llm_model_migration()` (e.g. `0058`/`0059` for Claude, `0052` for Voyage embeddings), while the `AlterField` choices migration alone doesn't backfill. The bot was right and convention-consistent, so I added `0062_seed_minimax_models` (a `RunPython` via `llm_model_migration()`), verified locally that it seeds all three MiniMax model rows, and [replied on the PR](https://github.com/dimagi/open-chat-studio/pull/3800#issuecomment-4927915638). Pushed to #3800.
 
-### Voice (TTS) increment — built, PR held (2026-07-09)
+### Voice (TTS) increment — PR #3801 opened (2026-07-09)
 
-Built the second increment on a separate branch `issue-2979-minimax-voice` (off upstream `main`, per the maintainer's 2-PR preference), commit `814af45`:
+Built the second increment on a separate branch `issue-2979-minimax-voice` (off upstream `main`, per the maintainer's 2-PR preference), commit `215382d`:
 
 - `VoiceProviderType.minimax` + `MinimaxVoiceConfigForm` (API key, Group ID, model) + dispatch to a new `MinimaxSpeechService`.
 - `MinimaxSpeechService` calls MiniMax's **synchronous** `/v1/t2a_v2` endpoint (GroupId query param + Bearer auth), decodes the **hex-encoded** audio, and raises `AudioSynthesizeException` on an application-level `base_resp` error — modeled on the ElevenLabs (direct-return) and Intron (custom-HTTP) providers.
 - `SyntheticVoice.MiniMax` service + a curated static seed of MiniMax's built-in English system voices (the intron pattern), seeded in `run_post_save_hook`.
 - Migrations for the new provider-type and service choices.
 
-**Reconciling with in-repo tests.** While building, a set of MiniMax voice tests appeared in `test_voice_providers.py` (added alongside this work). I treated them as the spec and reconciled my implementation to them rather than overwriting — importantly, they encode that MiniMax T2A needs a **`GroupId` query parameter** (which my first pass had missed), so I added the `minimax_group_id` config field and the query param. Final: **40 passed** in the voice suite, **589 passed** across `service_providers` (no regressions), `ruff` clean, `makemigrations --check` clean.
+**TDD + a GroupId catch.** Wrote the MiniMax voice tests first in `test_voice_providers.py`, encoding the T2A contract from MiniMax's docs — including that T2A needs a **`GroupId` query parameter** (distinct from the OpenAI-compatible *chat* endpoint's Bearer-only auth). An early implementation pass omitted the GroupId; the failing test drove it out, so the config gained a `minimax_group_id` field and the request a `?GroupId=…` query param. Verified green myself before opening the PR: **40 passed** in the voice suite, `ruff check` + `ruff format` clean, `makemigrations --check` clean.
 
-**Why the PR is held (not yet opened):** (1) the maintainer asked for chat first, then voice; and (2) both branches independently created `service_providers/migrations/0061_*`, so once chat #3800 merges this branch's migration must renumber to `0062` — I'll rebase and renumber then, and open the voice PR. Branch is pushed and ready.
+**PR opened:** [dimagi/open-chat-studio #3801](https://github.com/dimagi/open-chat-studio/pull/3801) — "feat: add MiniMax as a voice (TTS) provider" (+326/−1, 8 files), `Part of #2979`. Body: what/how (T2A wiring, GroupId + Bearer, hex decode) → testing (mocked, 40 passed) → notes. Status: **OPEN, mergeable**. Known follow-up: this branch's `service_providers/migrations/0061_*` collides with chat #3800's migrations (#3800 now carries `0061` **and** a `0062_seed_minimax_models` backfill added in review), so once #3800 merges I'll rebase and renumber this to `0063` (the next free number). The branches are independent — CI on #3801 is green standalone off `main` — so this is a trivial post-merge rebase, noted in the PR body.
 
 ### What we're waiting on / next
-- **Review/merge of chat PR #3800.**
-- On chat merge: **rebase the voice branch** (renumber the migration) and **open the voice PR** linked to #2979.
+- **Review of chat PR #3800 and voice PR #3801.**
+- On chat merge: **rebase the voice branch** to renumber its migration past chat's (`0061 → 0063`), then re-push #3801.
 
 ---
 

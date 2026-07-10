@@ -714,6 +714,15 @@ Built the second increment on a separate branch `issue-2979-minimax-voice` (off 
 
 **PR opened:** [dimagi/open-chat-studio #3801](https://github.com/dimagi/open-chat-studio/pull/3801) — "feat: add MiniMax as a voice (TTS) provider" (+326/−1, 8 files), `Part of #2979`. Body: what/how (T2A wiring, GroupId + Bearer, hex decode) → testing (mocked, 40 passed) → notes. Status: **OPEN, mergeable**. Known follow-up: this branch's `service_providers/migrations/0061_*` collides with chat #3800's migrations (#3800 now carries `0061` **and** a `0062_seed_minimax_models` backfill added in review), so once #3800 merges I'll rebase and renumber this to `0063` (the next free number). The branches are independent — CI on #3801 is green standalone off `main` — so this is a trivial post-merge rebase, noted in the PR body.
 
+### Self-review hardening (Week 7, 2026-07-10)
+
+With all three PRs open and awaiting review, I did a proactive self-review pass (depth over starting a fifth cycle) and shipped two improvements a careful maintainer would otherwise flag:
+
+- **Voice #3801 — idempotency proven + docstring corrected.** My seeding docstring (copied from Intron) cited the wrong uniqueness guarantee. Because MiniMax voices set `external_id`, re-seeding actually dedupes against the `unique_external_id_per_service_provider` constraint, not the name-based legacy one — fixed the docstring, and added a regression test that runs the post-save hook twice and asserts the voice count doesn't grow. (Writing that test also surfaced and fixed a dangling assertion an external edit had orphaned.) 41 voice tests pass.
+- **Chat #3800 — env-var credential loader added.** `credentials.py` maps env vars → provider config for the `bootstrap_data` command and integration fixtures; every other OpenAI-compatible provider (Groq/Perplexity/DeepSeek) had a loader but MiniMax didn't. Added `_minimax()` (reads `MINIMAX_API_KEY`), registered it, updated the credentials test fixture, and covered it with a test. 32 credential/service tests pass.
+
+`#1385` was left as-is: tiny surface (pixi task + CI YAML), already positively received with merge intent — hardening it further would be over-engineering.
+
 ### What we're waiting on / next
 - **Review of chat PR #3800 and voice PR #3801.**
 - On chat merge: **rebase the voice branch** to renumber its migration past chat's (`0061 → 0063`), then re-push #3801.

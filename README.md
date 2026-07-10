@@ -618,6 +618,15 @@ Branch `issue-829-numba-nojit-coverage` off upstream `6ae0293b`. The change is C
 
 **What we're waiting on:** @s3alfisc's review + merge of PR #1385, as promised in the comment above.
 
+### Maintainer Feedback Log — Cycle 3
+
+| Date | Who | Feedback | My response |
+|---|---|---|---|
+| 2026-07-08 | @s3alfisc (on issue #829) | I posted a claim/scoping comment; he had authored the issue. No objection to the numba-only scope. | Verified current `master` before building (numba alive, JAX obsolete, `detect_singletons` migrated to Rust) and flagged the scope correction on the issue ([comment](https://github.com/py-econometrics/pyfixest/issues/829#issuecomment-4920143212)) before opening the PR. |
+| 2026-07-09 | @s3alfisc (on PR #1385) | *"Amazing, thank you! I will review and merge after work this evening =)"* | Kept the PR green and mergeable; added an acceptance-criteria checklist to the description; awaiting his merge. No changes requested. |
+
+**Learnings (Cycle 3):** the highest-value work was *verifying a 16-month-old issue against current `master`* before writing code — the JAX half was obsolete and `detect_singletons` had migrated to Rust, so blindly following the issue would have shipped dead code. Also learned pyfixest's CI shape (weekly "extended" suite + codecov flags) and how JIT-compiled numba is invisible to coverage tooling.
+
 ---
 
 # Cycle 4
@@ -722,6 +731,16 @@ With all three PRs open and awaiting review, I did a proactive self-review pass 
 - **Chat #3800 — env-var credential loader added.** `credentials.py` maps env vars → provider config for the `bootstrap_data` command and integration fixtures; every other OpenAI-compatible provider (Groq/Perplexity/DeepSeek) had a loader but MiniMax didn't. Added `_minimax()` (reads `MINIMAX_API_KEY`), registered it, updated the credentials test fixture, and covered it with a test. 32 credential/service tests pass.
 
 `#1385` was left as-is: tiny surface (pixi task + CI YAML), already positively received with merge intent — hardening it further would be over-engineering.
+
+### Maintainer Feedback Log — Cycle 4
+
+| Date | Who | Feedback | My response |
+|---|---|---|---|
+| 2026-07-09 | @snopoke (on issue #2979) | Answered my scoping questions: **do 2 PRs** (chat, then voice); seed the **current** models from the models-intro page; no shared test account; approved the claim (`.take`). | Split into #3800 (chat) + #3801 (voice); checked the live models page and corrected my seeds to the current family (`MiniMax-M3`/`M2.7`/`M2`) in commit `3b83cce`; used mocked tests throughout (no live key). |
+| 2026-07-09 | CodeRabbit (AI reviewer, on #3800) | New default models only affect *future* syncs; existing DBs would miss them without a data migration. | Verified against repo convention (prior additions ship `llm_model_migration()`, e.g. `0058`/`0059`/`0052`), confirmed valid, added `0062_seed_minimax_models` (commit `100edc7`), verified it seeds the 3 rows, and [replied on the PR](https://github.com/dimagi/open-chat-studio/pull/3800#issuecomment-4927915638). |
+| 2026-07-10 | Self-review (pre-emptive) | — | Hardened both PRs before human review: corrected the voice seeding docstring + added an idempotency regression test (`f53d4b4`); added the missing `_minimax` env-var credential loader for parity with Groq/Perplexity/DeepSeek (`8e60141`); rewrote all three PR descriptions why-first with acceptance checklists and pasted test output. |
+
+**Learnings (Cycle 4):** three things stood out. (1) *Reconciling with tests written in parallel* — a set of MiniMax voice tests appeared in the repo mid-build; treating them as the spec (rather than overwriting) actually corrected my code (they encoded the `GroupId` query param I'd missed). (2) *Verifying a bot's review against convention* before acting — CodeRabbit was right, but I confirmed it matched how the repo actually seeds models rather than blindly complying. (3) *Following an existing provider pattern end-to-end* (enum → form → service → seeding → migration → credentials) is the difference between a provider that "works in a test" and one wired in like its peers.
 
 ### What we're waiting on / next
 - **Review of chat PR #3800 and voice PR #3801.**

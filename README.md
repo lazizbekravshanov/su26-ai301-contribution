@@ -2,7 +2,7 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 complete — main fix [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) **merged** (2026-07-04) and bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** (2026-07-02) into py-econometrics/pyfixest · Cycle 3 in progress — [pyfixest #829](https://github.com/py-econometrics/pyfixest/issues/829) (numba no-jit coverage): Phase IV — [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) opened 2026-07-08, **all CI green**, awaiting review · Cycle 4 in progress — [OCS #2979](https://github.com/dimagi/open-chat-studio/issues/2979) (MiniMax chat+voice): Phase IV — chat [PR #3800](https://github.com/dimagi/open-chat-studio/pull/3800) + voice [PR #3801](https://github.com/dimagi/open-chat-studio/pull/3801) both opened 2026-07-09 (issue claimed via `.take`), awaiting review
+**Status:** Cycle 1 complete — PR #603 **merged** into marimo-team/marimo-lsp (2026-06-24) · Cycle 2 complete — main fix [PR #1368](https://github.com/py-econometrics/pyfixest/pull/1368) **merged** (2026-07-04) and bonus [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) **merged** (2026-07-02) into py-econometrics/pyfixest · Cycle 3 in progress — [pyfixest #829](https://github.com/py-econometrics/pyfixest/issues/829) (numba no-jit coverage): Phase IV — [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) opened 2026-07-08, **all CI green**, awaiting review · Cycle 4 in progress — [OCS #2979](https://github.com/dimagi/open-chat-studio/issues/2979) (MiniMax chat+voice): Phase IV — chat [PR #3800](https://github.com/dimagi/open-chat-studio/pull/3800) + voice [PR #3801](https://github.com/dimagi/open-chat-studio/pull/3801) both opened 2026-07-09 (issue claimed via `.take`), awaiting review · Cycle 5 in progress — [orhun/git-cliff](https://github.com/orhun/git-cliff) (Rust): both target issues maintainer-approved by @orhun on 2026-07-12; [#1182](https://github.com/orhun/git-cliff/issues/1182) (`.config` discovery) verified **already implemented upstream** ([PR #1448](https://github.com/orhun/git-cliff/pull/1448), merged 2026-04-20) and flagged for closure; [#412](https://github.com/orhun/git-cliff/issues/412) (user-defined templates) approved — TDD implementation next
 
 ## Contributions at a Glance
 
@@ -13,6 +13,8 @@
 | 2b | CI-blocking mypy errors (found while triaging PR #1368's checks) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1369](https://github.com/py-econometrics/pyfixest/pull/1369) — fix two type errors surfaced by newer numpy stubs | ✅ **Merged** 2026-07-02 (approved by @leostimpfle; @s3alfisc added me to all-contributors) |
 | 3 | [#829 — Add tests with `JIT=False` for numba coverage](https://github.com/py-econometrics/pyfixest/issues/829) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | [PR #1385](https://github.com/py-econometrics/pyfixest/pull/1385) — `test-py-nojit` task runs numba tests with `NUMBA_DISABLE_JIT=1` in the weekly extended CI so codecov captures numba code paths (JAX obsolete; `detect_singletons` now Rust, excluded) | 🔄 **In review** — PR #1385 opened 2026-07-08, all CI green; awaiting @s3alfisc |
 | 4 | [#2979 — MiniMax integration for chat and voice](https://github.com/dimagi/open-chat-studio/issues/2979) | [dimagi/open-chat-studio](https://github.com/dimagi/open-chat-studio) (Python / Django) | Chat: [PR #3800](https://github.com/dimagi/open-chat-studio/pull/3800) — OpenAI-compatible LLM provider · Voice: [PR #3801](https://github.com/dimagi/open-chat-studio/pull/3801) — MiniMax T2A (TTS) provider | 🔄 **In review** — both PRs opened 2026-07-09 (issue assigned via `.take`); maintainer confirmed 2-PR split |
+| 5 | [#412 — Add flags and options to support user-defined templates](https://github.com/orhun/git-cliff/issues/412) | [orhun/git-cliff](https://github.com/orhun/git-cliff) (Rust) | `--templates-dir <PATH>` + `GIT_CLIFF_TEMPLATES_DIR`, `--list-templates`, user templates override built-ins | 🔨 **Approved, building** — @orhun green-lit scope 2026-07-12 ([approval](https://github.com/orhun/git-cliff/issues/412#issuecomment-4952775270)); design brief done, TDD implementation next |
+| 5b | [#1182 — Support searching in `.config` folder](https://github.com/orhun/git-cliff/issues/1182) | [orhun/git-cliff](https://github.com/orhun/git-cliff) (Rust) | Investigated for `.config/cliff.toml` discovery | 🔎 **No code needed** — verified already implemented upstream ([PR #1448](https://github.com/orhun/git-cliff/pull/1448)); confirmed end-to-end with a behavioral test, flagged for closure rather than duplicating merged work |
 
 Cycle 1 (#154) is documented in full below, unchanged; Cycle 2 (#1244) documentation starts at [Cycle 2](#cycle-2); Cycle 3 (#829) starts at [Cycle 3](#cycle-3).
 
@@ -748,6 +750,79 @@ With all three PRs open and awaiting review, I did a proactive self-review pass 
 
 ---
 
+# Cycle 5
+
+*Cycle 5 moves to a new language — **Rust** — with a CLI-tooling contribution to [orhun/git-cliff](https://github.com/orhun/git-cliff), a widely used changelog generator (12k★). Two `good first issue`s were selected from the CodePath list and **both were approved by the maintainer (@orhun) on 2026-07-12**. The headline learning this cycle is a process one: verifying live state before writing code turned one of the two "approved" issues into a *don't-duplicate-merged-work* finding.*
+
+## Cycle 5 — Project
+
+**Project:** [orhun/git-cliff](https://github.com/orhun/git-cliff) — a highly configurable changelog generator (Rust CLI + library workspace).
+**My fork:** `lazizbekravshanov/git-cliff` (cloned to `~/pet/git-cliff`; `origin` = fork, `upstream` = orhun/git-cliff).
+
+Why git-cliff: Rust-first (a new stack for this practicum), very active (external PRs merged as recently as the week of selection), conventional Cargo tooling, and — verified before committing — **no AI-assisted-contribution ban** in its `CONTRIBUTING.md`. **Ruma** was investigated and rejected despite having suitable issues: its `CONTRIBUTING.md` explicitly bans LLM-generated code/docs/issues, which is incompatible with this AI301 workflow (documented and respected).
+
+**Toolchain established (2026-07-12):** installed `rustup` (stable **1.97.0** ≥ the repo's required 1.85.1, plus nightly for `rustfmt`), fetched upstream tags (git-cliff's tests require them), and confirmed a **clean baseline build** before touching any code. Repo verification gate for every PR: `cargo test` · `cargo clippy --tests -- -D warnings` · `cargo +nightly fmt --all -- --check`.
+
+## Cycle 5 — Phase I: Issue Selection
+
+### Issues (maintainer-first, both approved)
+1. [#1182 — Support searching in `.config` folder](https://github.com/orhun/git-cliff/issues/1182): add `.config/cliff.toml` to config discovery. Labels: `feature/request`, `good first issue`.
+2. [#412 — Add flags and options to support user-defined templates](https://github.com/orhun/git-cliff/issues/412): `--templates-dir` + `GIT_CLIFF_TEMPLATES_DIR`, `--list-templates`, user templates overriding built-ins. Labels: `feature/request`, `good first issue`.
+
+Both had a stale/soft-claim history (#1182 had @joshka's June-2025 "I'll definitely get to this"; #412 predates the current CLI), so I did **not** self-assign. I posted a scoped claim/permission comment on each and waited. @orhun approved both on 2026-07-12.
+
+**Proof — maintainer approval on #1182** (*"Yup, simply being able to extend the logic to discover the config file would be great 👍 Feel free to submit a PR :)"*):
+
+![Maintainer @orhun's approval on git-cliff #1182](assets/gitcliff1182-approval.png)
+
+**Proof — maintainer approval on #412** (*"Yup, that sounds good 👍"*):
+
+![Maintainer @orhun's approval on git-cliff #412](assets/gitcliff412-approval.png)
+
+## Cycle 5 — Phase II: Reproduce and Plan
+
+### #1182 — the finding: already implemented upstream (verify before you build)
+
+Before writing a line, I checked current `main` — and found `.config/cliff.toml` discovery **already shipped**, in [PR #1448](https://github.com/orhun/git-cliff/pull/1448) ("support more configuration files", merged **2026-04-20**):
+
+- `git-cliff-core` defines `CONFIG_FILES = ["cliff.toml", ".cliff.toml", ".config/cliff.toml"]`;
+- `Config::retrieve_project_config_path()` iterates them and is wired into the CLI (`git_cliff::run`) via an ancestor-directory search when `--config` is omitted.
+
+The June-2025 discussion (and @joshka's soft claim) **predates** #1448; @orhun's 2026-07-12 "go ahead" was given without noticing the feature had already landed in April. **Verified end-to-end** with a behavioral test: in a project containing only `.config/cliff.toml` (no root `cliff.toml`, no `--config`), the built binary logs `Using configuration from parent directory: …/.config/cliff.toml` and applies that config (a unique marker header rendered in the output).
+
+**Decision:** do not duplicate merged work. Draft a courteous note on the issue documenting that #1448 already resolves it (with the verification as evidence) and offer either to close it or to pursue the one *unaddressed* remnant — @joshka's suggestion to make the clap `--config` default an `Option` — which @orhun had said he wanted to *discuss further* (so it is outside the cleanly-approved scope). Effort re-pointed to #412.
+
+### #412 — design brief (approved scope → plan)
+
+"Templates" here are the `--init <name>` **preset configs** (the `examples/*.toml` files the codebase already calls *built-in templates* via `BuiltinConfig`, embedded with RustEmbed) — distinct from Tera *body* templates, which are out of scope. Confirmed on `main` that none of the requested surface exists yet (`--templates-dir`, `--list-templates`, `GIT_CLIFF_TEMPLATES_DIR`).
+
+Planned behavior (maintainer-approved high-level scope):
+- `--templates-dir <PATH>` (clap `env = "GIT_CLIFF_TEMPLATES_DIR"`) registers a directory of `<name>.toml` presets; `--init <name>` resolves user dir first, then built-ins (unchanged when no dir is given).
+- `--list-templates` prints names one-per-line, sorted, deduped (user overrides built-in) — plain names, ideal for the emacs/shell completion the reporter asked for; prints and exits like `--init`.
+- Errors: an explicitly-given missing/not-a-dir `--templates-dir` is a hard error; non-`.toml` files ignored; selected-but-unreadable file errors.
+- Touch-points (narrow): `embed.rs` (`BuiltinConfig` gains listing + user-dir-aware resolution), `args.rs` (`templates_dir`, `list_templates`), `main.rs`/`lib.rs` (`--list-templates` handling; thread the dir into `init_config`), plus docs.
+
+Implementation follows **TDD** (core unit tests for listing/override/missing-dir + a CLI test for `--list-templates` and user-override `--init`), one issue per branch, one PR per issue.
+
+### Status — Cycle 5
+- [x] Selected two Rust `good first issue`s from the CodePath list; rejected Ruma on its AI-contribution ban.
+- [x] Posted scoped claim/permission comments; **both approved by @orhun (2026-07-12)**.
+- [x] Fork + clone + Rust toolchain (stable 1.97.0 / nightly) + tags + clean baseline build.
+- [x] #1182: verified already implemented upstream (#1448) end-to-end; will flag for closure (no duplicate PR).
+- [x] #412: design brief complete.
+- [ ] #412: TDD implementation → verify (`cargo test`/`clippy`/`fmt`) → PR linked to #412.
+
+### Maintainer Feedback Log — Cycle 5
+
+| Date | Who | Feedback | My response |
+|---|---|---|---|
+| 2026-07-12 | @orhun (on issue #1182) | *"Yup, simply being able to extend the logic to discover the config file would be great 👍 Feel free to submit a PR :)"* | Verified `main` first and found the feature already merged in #1448 (2026-04-20); confirmed it end-to-end with a behavioral test; will post a note flagging it for closure instead of duplicating merged work. |
+| 2026-07-12 | @orhun (on issue #412) | *"Yup, that sounds good 👍"* (approving the `--templates-dir` / `--list-templates` / override scope) | Wrote a design brief mapping the approved scope to `embed.rs`/`args.rs`/`main.rs`; proceeding TDD, one branch/PR for #412. |
+
+**Learnings (Cycle 5, so far):** *verify live state before building — even after approval.* A maintainer's "go ahead" is necessary but not sufficient; the codebase is the source of truth. Checking `main` (and proving it with a behavioral test) turned #1182 from "write a PR" into "don't waste the maintainer's time reviewing a duplicate," which is the more valuable contribution. Also reinforced: keep the AI-policy check per-repo (git-cliff allows it; Ruma bans it — and that boundary is respected, not worked around).
+
+---
+
 ## Learnings & Reflections
 
 ### Technical Skills Gained
@@ -825,3 +900,7 @@ I am responsible for every line in my pull request. This table logs how I used A
 | 2026-07-02 | Claude Code | CI triage on PR #1368 (tracing the red pre-commit.ci to pre-existing mypy errors via a clean-`master` baseline run), building the follow-up fix PR #1369 (including a 50-crosstab equivalence check for the `separation.py` change), rebasing #1368 after #1369 merged, and updating this journal | I approved opening #1369 as a separate PR to keep #1368 atomic, and reviewed all PR text and journal edits; the maintainers' merge of #1369 independently validated the fix |
 | 2026-07-04 | Claude Code | Checked the live state of all open contributions, read @leostimpfle's 2026-07-03 review + refactor of PR #1368 against the current diff, drafted the reply endorsing his predict-level approach, and updated this journal (feedback log, status table, outcome line) | I chose to endorse the refactor rather than revert to my `did2s`-local version, reviewed the reply wording before it was posted, and approved the journal edits |
 | 2026-07-08 | Claude Code | Re-checked contribution state; confirmed PR #1368 was **merged 2026-07-04** by @leostimpfle (18 min after my endorsement, merge commit `83fdcc5`) with no further changes requested, verified it is not yet in a tagged release, and updated this journal to close out Cycle 2 | I reviewed the merge facts and journal edits; the merge marks Cycle 2 Phase IV complete — my second completed cycle |
+| 2026-07-12 | Claude Code | Cycle 5 Phase I/II: checked live GitHub state of the two git-cliff issues (confirmed @orhun approved both), set up the fork/clone and Rust toolchain (rustup stable 1.97.0 + nightly), fetched tags, ran the baseline build, and read the config/template code paths | I chose git-cliff and the two issues, wrote/approved the scoped claim comments myself, and set the criteria (Rust, active repo, no AI-contribution ban — I rejected Ruma on that basis) |
+| 2026-07-12 | Claude Code | Cycle 5 #1182: tracing `main` to check whether `.config/cliff.toml` discovery already existed, then constructing a behavioral test (temp repo with only `.config/cliff.toml`) to confirm it end-to-end | I read `CONFIG_FILES`, `retrieve_project_config_path`, and the `git_cliff::run` config-resolution block myself, ran the behavioral test and confirmed the discovery log line + unique-marker output, and made the call **not** to submit a duplicate PR (flag #1448 for closure instead) |
+| 2026-07-12 | Claude Code | Cycle 5 #412: writing the design brief (flag names, env var, `--list-templates` format, override precedence, error handling) against the maintainer-approved scope and mapping it to the exact code touch-points | I confirmed the requested surface does not yet exist on `main`, set the design decisions (missing-dir = hard error, plain one-per-line listing), and gated implementation on my review of the brief before any TDD code |
+| 2026-07-12 | Claude Code | Capturing the maintainer-approval screenshots (git-cliff #1182 and #412) and updating this README for the weekly submission — status line, contributions table, the Cycle 5 section, feedback log, and this usage log | I verified each screenshot shows @orhun's actual approval text before embedding it, and reviewed every journal edit for accuracy (esp. the #1182 "already-implemented" finding and its dates) |

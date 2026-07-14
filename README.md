@@ -28,7 +28,7 @@ The latest reviews across the open PRs, and how I responded to each.
 
 ![@SmittieC's review, approval, and schema-fix request on open-chat-studio #3800](assets/ocs3800-maintainer-approval.png)
 
-**git-cliff #1182 → PR #1584 — @orhun (Rust).** After I flagged that `.config` discovery was already implemented upstream (PR #1448) rather than duplicate it, @orhun asked for the residual clap-`Option` cleanup (*"Yes, pls!"*), which I opened as [PR #1584](https://github.com/orhun/git-cliff/pull/1584). The whole arc — original request → my finding → his ask → my PR:
+**git-cliff #1182 → PR #1584 — @orhun (Rust).** After I flagged that `.config` discovery was already implemented upstream (PR #1448) rather than duplicate it, @orhun asked for the residual clap-`Option` cleanup (*"Yes, pls!"*), which I opened as [PR #1584](https://github.com/orhun/git-cliff/pull/1584). On review he asked to go further — *"enable discovery when the `--config` option is omitted"* + update the docs — which I implemented (`329e753`: `None` now routes through pure project/user discovery; explicit `--config` still overrides; docs updated). The whole arc — original request → my finding → his ask → my PR → his follow-up → my change:
 
 ![@orhun's clap-cleanup request on git-cliff #1182](assets/gitcliff1182-clap-followup.png)
 

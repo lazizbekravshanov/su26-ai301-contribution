@@ -20,6 +20,24 @@ Cycle 1 (#154) is documented in full below, unchanged; Cycle 2 (#1244) documenta
 
 ---
 
+## Recent Maintainer Updates (2026-07-14)
+
+The latest reviews across the open PRs, and how I responded to each.
+
+**open-chat-studio #3800 — @SmittieC (chat provider).** @SmittieC reviewed the MiniMax chat PR end-to-end: asked me to register MiniMax in `scripts/reconcile_models.py` (fixed, `92b9750`), **approved** it, then flagged the failing schema test with *"To fix the failing test, run `invoke schema` and commit the updated changes"* — which I fixed by regenerating `api-schemas/export.yml` (`6c51c7d`). The full exchange:
+
+![@SmittieC's review, approval, and schema-fix request on open-chat-studio #3800](assets/ocs3800-maintainer-approval.png)
+
+**git-cliff #1182 → PR #1584 — @orhun (Rust).** After I flagged that `.config` discovery was already implemented upstream (PR #1448) rather than duplicate it, @orhun asked for the residual clap-`Option` cleanup (*"Yes, pls!"*), which I opened as [PR #1584](https://github.com/orhun/git-cliff/pull/1584). The whole arc — original request → my finding → his ask → my PR:
+
+![@orhun's clap-cleanup request on git-cliff #1182](assets/gitcliff1182-clap-followup.png)
+
+**open-chat-studio #3801 — @SmittieC + @snopoke (voice provider).** Voice PR **approved by @SmittieC** (*"LGTM"*); @snopoke's inline review on `speech_service.py` (*"@lazizbekravshanov please address this"*) drove the `GroupId` → httpx `params` fix ([comment](https://github.com/dimagi/open-chat-studio/pull/3801#discussion_r3571435453)). CodeScene's "Bumpy Road" finding was then resolved by extracting a shared `_seed_builtin_voices` helper (`737a192`).
+
+**pyfixest #1385 — @s3alfisc (numba coverage).** @s3alfisc said he'd *"review and merge after work this evening"* (2026-07-09); still open, so a gentle [nudge](https://github.com/py-econometrics/pyfixest/pull/1385#issuecomment-4954691665) was posted 2026-07-13.
+
+---
+
 ## Project
 
 **Project:** [marimo-team/marimo-lsp](https://github.com/marimo-team/marimo-lsp)

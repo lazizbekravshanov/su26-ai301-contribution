@@ -451,6 +451,16 @@ ValueError: operands could not be broadcast together with shapes (190,) (200,) (
 
 190 vs 200 = the always-treated unit's 10 dropped rows. This confirms the reporter's mechanism end-to-end and shows the bug fires on completely ordinary DiD data (always-treated units are common), not just degenerate collinearity.
 
+**Steps to reproduce** (on `master` @ `27dfbba`, in `pixi run python`), no code modification needed:
+
+1. Build a synthetic panel of 20 units × 10 years where **unit 1 is treated from period 1** (an always-treated unit with no not-yet-treated observations).
+2. Run the Gardner two-stage DiD estimator on it: `pf.did.estimation.did2s(data, yname=..., first_stage="~0 | unit + year", second_stage="~ treat", treatment="treat", cluster="unit")`.
+3. Observe the crash instead of an estimate.
+
+**Expected vs. actual.**
+- **Expected:** either a successful `did2s` estimate, or a clear, actionable error naming the fixed-effect level that cannot be estimated.
+- **Actual:** an opaque broadcast error with no hint about the cause — `ValueError: operands could not be broadcast together with shapes (190,) (200,) (190,)` at `did2s.py:355`. The user has no way to connect "190 vs 200" to their always-treated unit.
+
 ### Fix Plan (pending maintainer's design answer)
 
 - **Guard location**: in `_did2s_estimate`, immediately after `Y_hat = fit1.predict(newdata=data)` (`did2s.py:231`) — check `np.isnan(Y_hat)`; if any, resolve *which* fixed-effect levels are missing by comparing `fit1.fixef()`'s levels per FE variable against the levels present in `data`, and raise an informative error naming them (e.g., "unit levels [1] have no not-yet-treated observations, so their fixed effects cannot be estimated in the first stage").
@@ -465,7 +475,12 @@ Test-driven, on branch `fix-issue-1244-did2s-unestimated-fixef` (from upstream `
 2. **GREEN** — guard in `_did2s_estimate` (`pyfixest/did/did2s.py`), immediately after `Y_hat = fit1.predict(newdata=data)`: if any prediction is `NaN`, diff each fixed-effect variable's levels in `data` against `fit1.fixef()`'s estimated levels and raise a `ValueError` naming the unestimable levels and explaining why (no not-yet-treated observations / collinearity) and what to do (drop the affected observations). Test passes; on the Phase II repro panel the message reads `… only: unit: ['1'] …`.
 3. **Changelog** — entry under "PyFixest 0.70.0 (In Development) → Bug Fixes".
 
-**Verification:** new test red→green; `pixi run test-py` 686 passed / 11 skipped (2 collection errors are a missing optional `torch` in the default env — pre-existing, also on `master`); `pixi run lint` passes all hooks except 2 pre-existing `mypy` errors in files this diff doesn't touch. One commit, tree green at the commit.
+**Verification (automated + manual):** *Automated* — new regression test `tests/test_errors.py::test_did2s_unestimated_first_stage_fixef` red→green; full `pixi run test-py` 686 passed / 11 skipped (2 collection errors are a missing optional `torch` in the default env — pre-existing, also on `master`); `pixi run lint` passes all hooks except 2 pre-existing `mypy` errors in files this diff doesn't touch. *Manual* — ran the Phase II synthetic always-treated panel through `did2s` in a REPL and confirmed the new message reads `… could not be estimated in the first stage … only: unit: ['1'] …` instead of the broadcast crash. One commit, tree green at the commit.
+
+### Challenges Faced (Cycle 2)
+
+- **maturin import-hook vs. coverage.** Running the suite under coverage hit `ImportError: cannot load module more than once per process` — the maturin import-hook rebuilds the Rust `src/` extension on import, and coverage's re-import trips that. Resolved with a one-time `pixi run maturin develop` and package-level `--cov=pyfixest` (submodule-level `--cov` re-inits the PyO3 module and re-triggers it).
+- **A red CI check that wasn't mine.** `pre-commit.ci` failed on two `mypy` errors in files my diff never touched. Rather than assume, I proved they pre-existed by running the hook against a clean `master` baseline, then split the fixes into a **separate** PR ([#1369](https://github.com/py-econometrics/pyfixest/pull/1369)) to keep #1368 atomic — #1369 merged the same day and turned #1368's CI green, which was faster than arguing about an unrelated red X inside #1368.
 
 ## Cycle 2 — Phase IV: Submit and Iterate
 
@@ -599,6 +614,16 @@ Ran the numba-backed demean test with JIT on vs. off, measuring `pyfixest/estima
 
 **+80 percentage points.** This is exactly the invisibility #829 describes: with JIT on, coverage sees the `def`/decorator lines but not the compiled bodies; with JIT off, the bodies execute as Python and register. Both runs pass the test (~6–7s each).
 
+**Steps to reproduce the coverage gap** (on `master` @ `6ae0293b`):
+
+1. Run a numba-backed test with JIT on (how CI runs) and coverage: `pixi run pytest tests/test_demean.py -k numba --cov=pyfixest --cov-report=term-missing -n0`.
+2. Re-run the identical test with JIT disabled by prefixing `NUMBA_DISABLE_JIT=1`.
+3. Compare the reported coverage of `pyfixest/estimation/numba/demean_nb.py` between the two runs.
+
+**Expected vs. actual.**
+- **Expected:** because the test *does* exercise the numba kernels, codecov should credit them as covered.
+- **Actual:** with JIT on, `demean_nb.py` reports only **17%** — the compiled `@njit` bodies (lines 62–108) never run as traced Python bytecode, so coverage can't see them; only `NUMBA_DISABLE_JIT=1` surfaces them (97%). The report understates real coverage, which is the maintainer-facing problem #829 asks to fix.
+
 ### Findings that refine the scope (verified against current `master`)
 
 The 16-month-old issue named four target tests; the refactor has moved the ground under two:
@@ -628,6 +653,15 @@ Branch `issue-829-numba-nojit-coverage` off upstream `6ae0293b`. The change is C
 | `.gitignore` | Ignore `coverage-nojit.xml` |
 
 `detect_singletons` is deliberately excluded (now Rust — see Phase II); JAX is dropped (obsolete — Phase I).
+
+### Challenges Faced (Cycle 3)
+
+- **Rust extension vs. coverage instrumentation** (recurring from Cycle 2): the maturin import-hook rebuilds the Rust `src/` extension on import, which under coverage throws `ImportError: cannot load module more than once per process`; submodule-scoped `--cov` re-inits the PyO3 module and hits the same wall. Resolved with a one-time `pixi run maturin develop` + package-level `--cov=pyfixest -n0` (matching CI).
+- **A 16-month-old issue whose ground had moved.** Two of the four tests the issue named were stale: `detect_singletons` had migrated numba→Rust (so `NUMBA_DISABLE_JIT` does nothing for it, verified 90% in both modes) and JAX was gone entirely. Rather than implement the issue as literally written, I verified each claim against current `master` and **descoped** — drop `detect_singletons`, numba-only, targeted tests weekly — and surfaced the drift to @s3alfisc in the claim comment so the scope change was his call.
+
+### Testing notes (manual + automated)
+
+*Automated:* the before/after coverage delta itself is the test of the change — `pixi run test-py-nojit` runs the numba tests under `NUMBA_DISABLE_JIT=1` and uploads `coverage-nojit.xml`; the numba modules jump from ~17% to ~97%. *Manual:* ran the full no-jit target set locally (274 passed / 6 skipped in ~9 min) to confirm it's green but genuinely slow — which validated the "weekly-only, not per-commit" placement.
 
 **Verification (local, 2026-07-08):**
 
@@ -710,6 +744,20 @@ Forked + cloned OCS; remotes wired (origin=fork, upstream=dimagi). Stack: **uv +
 
 Baseline smoke test green: `test_voice_providers.py` **34 passed**.
 
+### Verifying the gap and the API contract (2026-07-09)
+
+#2979 is a feature request (a stub issue), so "reproduction" here means confirming the current gap and pinning the external contract I'd build against — so the plan targets reality, not assumptions.
+
+**Steps:**
+
+1. Grep the provider enums in `apps/service_providers/models.py` (`LlmProviderTypes`, `VoiceProviderType`) and check the admin provider-config UI — confirm **no MiniMax option exists** in either.
+2. Verify MiniMax's **chat** API: it is OpenAI-compatible at `https://api.minimax.io/v1`, so it can reuse the existing `OpenAIGenericService` (like groq/perplexity).
+3. Verify MiniMax's **voice (T2A)** API: `POST /v1/t2a_v2` is a *custom* shape — it needs a `GroupId` **query param** plus Bearer auth and returns **hex-encoded** audio — so it needs its own `SpeechService`, unlike the OpenAI-compatible chat side.
+
+**Expected vs. actual (the feature's "before").**
+- **Expected (target):** a team can select MiniMax as both a chat and a voice provider, wired like OCS's existing providers.
+- **Actual (before):** neither `LlmProviderTypes` nor `VoiceProviderType` includes MiniMax, and there is no way to configure it — exactly the gap #2979 asks to close.
+
 ### Plan (architecture mapped from the code)
 - **Chat (LLM):** `LlmProviderTypes.minimax` with `{"openai_api_base": "https://api.minimax.io/v1"}`; both `form_cls` and `_build_llm_service` route it through `OpenAIGenericConfigForm` / `OpenAIGenericService` (identical to groq/perplexity); seed default models; migration for the new choice.
 - **Voice (TTS):** `VoiceProviderType.minimax` + a `MinimaxSpeechService(SpeechService)` implementing `_synthesize_voice → SynthesizedAudio` against `/v1/t2a_v2`, wired into `VoiceProvider.get_speech_service`; seed MiniMax's fixed voice catalogue via a `build_minimax_synthetic_voices` helper in `run_post_save_hook` — the **intron** pattern (MiniMax has a fixed voice list, so a static seed fits better than ElevenLabs' API sync); config form + `form_cls` case.
@@ -781,6 +829,13 @@ With all three PRs open and awaiting review, I did a proactive self-review pass 
 | 2026-07-14 | CodeScene (bot, on #3801) | Critical "Bumpy Road Ahead" on `VoiceProvider.run_post_save_hook`; "Low Cohesion" on the test file. | Extracted the duplicated Intron/MiniMax seeding branches into a shared `_seed_builtin_voices` helper (`737a192`, behavior-preserving, 41 tests pass) — fixes the Bumpy Road. Judged the test-file cohesion flag inherent/advisory (appending cases to a per-provider module) and left it, offering to split if the maintainer prefers. |
 | 2026-07-15 | @snopoke (on #3801, voice) | **Approved**, with: "CI failing: `test_team_scoped_services` … Right contains one more item: 'MiniMax'". | The assertion in `apps/experiments/tests/test_models.py` (a file outside the `service_providers` suite I'd been running) hard-codes the `TEAM_SCOPED_SERVICES` list; added `SyntheticVoice.MiniMax` (`3d38c1c`), verified `TestSyntheticVoice` (4) + the voice suite (41) pass, and [replied](https://github.com/dimagi/open-chat-studio/pull/3801#issuecomment-4982946561). |
 
+### Challenges Faced (Cycle 4)
+
+- **Postgres port collision (non-invasive fix).** Host port 5432 was already held by another project's Postgres (`covenant-db`), so OCS's DB container couldn't publish its port and tests authed against the wrong server. Fixed with a local `docker-compose.ocs-local.yml` `!override` mapping OCS's DB to **5434** (+ `.env`), without disturbing the other project. *(This recurred in the Week-of-07-15 rebase work when `leaflet-test-db` later grabbed 5434 — same non-invasive playbook, remapped to 5435.)*
+- **A missing `GroupId` query param, caught by TDD.** MiniMax's T2A endpoint needs a `?GroupId=…` query param distinct from the chat endpoint's Bearer-only auth. An early implementation pass omitted it; the failing voice test drove it out, adding a `minimax_group_id` config field and the query param. Later hardened further (httpx `params` instead of f-string interpolation) on @snopoke's review.
+- **A concurrent session editing the same tree.** Mid-build, a second Claude session began building the same voice increment in the same working tree (files/migrations flickered live). I converged on the same design, kept one PR open, and noted the coordination hazard — if two sessions ever run on one repo again, stop one first.
+- **`uv sync` stall + a system dep.** The large ML dependency tree stalled once during `uv sync` (retried with capped concurrency) and required `brew install libmagic` for `python-magic`.
+
 **Learnings (Cycle 4):** three things stood out. (1) *Reconciling with tests written in parallel* — a set of MiniMax voice tests appeared in the repo mid-build; treating them as the spec (rather than overwriting) actually corrected my code (they encoded the `GroupId` query param I'd missed). (2) *Verifying a bot's review against convention* before acting — CodeRabbit was right, but I confirmed it matched how the repo actually seeds models rather than blindly complying. (3) *Following an existing provider pattern end-to-end* (enum → form → service → seeding → migration → credentials) is the difference between a provider that "works in a test" and one wired in like its peers.
 
 ### What we're waiting on / next
@@ -827,7 +882,17 @@ Before writing a line, I checked current `main` — and found `.config/cliff.tom
 - `git-cliff-core` defines `CONFIG_FILES = ["cliff.toml", ".cliff.toml", ".config/cliff.toml"]`;
 - `Config::retrieve_project_config_path()` iterates them and is wired into the CLI (`git_cliff::run`) via an ancestor-directory search when `--config` is omitted.
 
-The June-2025 discussion (and @joshka's soft claim) **predates** #1448; @orhun's 2026-07-12 "go ahead" was given without noticing the feature had already landed in April. **Verified end-to-end** with a behavioral test: in a project containing only `.config/cliff.toml` (no root `cliff.toml`, no `--config`), the built binary logs `Using configuration from parent directory: …/.config/cliff.toml` and applies that config (a unique marker header rendered in the output).
+The June-2025 discussion (and @joshka's soft claim) **predates** #1448; @orhun's 2026-07-12 "go ahead" was given without noticing the feature had already landed in April.
+
+**Steps to reproduce (the behavioral test that settled it):**
+
+1. `git log -S 'CONFIG_FILES' --oneline` on `git-cliff-core` — dates `.config/cliff.toml` support to `7d90eee` / PR #1448 (merged 2026-04-20).
+2. Build the binary (`cargo build`) and create a temp git repo containing **only** `.config/cliff.toml` (with a unique `[changelog] header` marker), no root `cliff.toml`, and pass no `--config`.
+3. Run `git-cliff -vv` in it and read both the log and the generated output.
+
+**Expected vs. actual.**
+- **Expected (what the issue asks for):** git-cliff should discover and use `.config/cliff.toml`.
+- **Actual (the finding):** it *already does* — the binary logs `Using configuration from parent directory: …/.config/cliff.toml` and the unique marker header appears in the output. The requested behavior is already shipped, so the correct contribution is **not** a duplicate PR.
 
 **Decision:** do not duplicate merged work. Draft a courteous note on the issue documenting that #1448 already resolves it (with the verification as evidence) and offer either to close it or to pursue the one *unaddressed* remnant — @joshka's suggestion to make the clap `--config` default an `Option` — which @orhun had said he wanted to *discuss further* (so it is outside the cleanly-approved scope). Effort re-pointed to #412.
 
@@ -884,6 +949,13 @@ The #1182 investigation surfaced a residual improvement (@joshka's original poin
 | 2026-07-12 | @orhun (on issue #412) | *"Yup, that sounds good 👍"* (approving the `--templates-dir` / `--list-templates` / override scope) | Wrote a design brief, implemented test-first, and opened [PR #1583](https://github.com/orhun/git-cliff/pull/1583) (2026-07-13, Closes #412) — awaiting review. |
 | 2026-07-14 | @orhun (on issue #1182) | To my offer of the clap-`Option` cleanup: *"Yes, pls!"* | Opened it as a separate PR [#1584](https://github.com/orhun/git-cliff/pull/1584) (behavior-preserving `config: Option<PathBuf>`), and in the PR asked whether he wanted the deeper discovery-precedence change too. |
 | 2026-07-14 | @orhun (on PR #1584) | *"Yes, I think we should enable discovery when the `--config` option is omitted :) Also, can you update the docs based on these changes?"* | Reworked the `None` case to route through pure discovery (project config → user config directory), kept explicit `--config` overriding, updated `configuration/index.md`, re-verified 8 behavioral scenarios + the full gate (`329e753`), and replied. |
+
+### Challenges Faced (Cycle 5)
+
+- **Broken nightly `rustfmt`.** The first nightly toolchain install left `rustfmt` unable to load `librustc_driver` (a dyld error), so `cargo +nightly fmt` failed. Reinstalled the nightly toolchain with the full profile + `rustfmt` component, which fixed it — `fmt` is only needed at submit time, so I repaired it in the background while proceeding.
+- **A "bug" that was already fixed.** The headline surprise — #1182's `.config` discovery already shipped in #1448 — meant the most valuable move was *not* writing code. Diagnosing this took `git log -S`, reading the resolution path in `lib.rs`, and a behavioral test; skipping that verification would have produced a duplicate PR.
+- **A pre-existing lint from a newer toolchain.** `cargo clippy -D warnings` flagged `git-cliff-core/src/repo.rs:585` — a file outside my diff. Confirmed it's environmental (my rustc 1.97.0 is stricter than the repo's pinned CI) rather than "fixing" unrelated code, and noted it in the PR.
+- **Screenshot capture of long PR threads.** Headless Chrome renders GitHub comments only on warm loads (cold loads showed skeleton placeholders), and heights above ~4800px failed outright. Worked around it by capturing tall then top-cropping with a tiny stdlib PNG cropper (no PIL/ffmpeg available; PEP 668 blocked `pip`).
 
 **Learnings (Cycle 5, so far):** *verify live state before building — even after approval.* A maintainer's "go ahead" is necessary but not sufficient; the codebase is the source of truth. Checking `main` (and proving it with a behavioral test) turned #1182 from "write a PR" into "don't waste the maintainer's time reviewing a duplicate," which is the more valuable contribution. Also reinforced: keep the AI-policy check per-repo (git-cliff allows it; Ruma bans it — and that boundary is respected, not worked around).
 

@@ -469,7 +469,7 @@ ValueError: operands could not be broadcast together with shapes (190,) (200,) (
 
 ## Cycle 2 — Phase III: Build (2026-07-02)
 
-Test-driven, on branch `fix-issue-1244-did2s-unestimated-fixef` (from upstream `27dfbba`):
+Test-driven, on branch `fix-issue-1244-did2s-unestimated-fixef` (from upstream `27dfbba`), landing as one atomic commit `9741163b`:
 
 1. **RED** — regression test `tests/test_errors.py::test_did2s_unestimated_first_stage_fixef`: a 6×5 synthetic panel with an always-treated unit, `pytest.raises(ValueError, match="could not be estimated in the first stage")`. Watched it fail for the right reason: the current code raises the opaque broadcast `ValueError` (`shapes (25,) (30,)`), so the regex doesn't match.
 2. **GREEN** — guard in `_did2s_estimate` (`pyfixest/did/did2s.py`), immediately after `Y_hat = fit1.predict(newdata=data)`: if any prediction is `NaN`, diff each fixed-effect variable's levels in `data` against `fit1.fixef()`'s estimated levels and raise a `ValueError` naming the unestimable levels and explaining why (no not-yet-treated observations / collinearity) and what to do (drop the affected observations). Test passes; on the Phase II repro panel the message reads `… only: unit: ['1'] …`.
@@ -930,7 +930,7 @@ Implemented test-first in the git-cliff workspace on branch `issue-412-user-defi
 - **CLI (`args.rs`/`main.rs`/`lib.rs`):** `--templates-dir <PATH>` (`env = GIT_CLIFF_TEMPLATES_DIR`) and `--list-templates` (prints sorted names and exits, like `--init`); `init_config` threads the templates dir through to `get_config_from`.
 - **Docs:** `usage/initializing.md` (a "User-defined templates" section) + `usage/args.md`.
 
-**Verification:** 10 new tests (7 core + 2 lib + 1 args-parse), watched fail before each implementation. Full workspace `cargo test` green (git-cliff 8, git-cliff-core 93); `cargo +nightly fmt --all -- --check` clean; `cargo clippy --tests -- -D warnings` clean on the changed code (one pre-existing `repo.rs` lint from the newer local toolchain is unrelated and outside the diff). Behavioral checks on the built binary: listing, user-dir merge + same-name override/dedup, the `GIT_CLIFF_TEMPLATES_DIR` env var, `--init <name> --templates-dir` writing user content, the missing-directory error, and both commands working outside a git repository. One atomic commit, no AI attribution.
+**Verification:** 10 new tests (7 core + 2 lib + 1 args-parse), watched fail before each implementation. Full workspace `cargo test` green (git-cliff 8, git-cliff-core 93); `cargo +nightly fmt --all -- --check` clean; `cargo clippy --tests -- -D warnings` clean on the changed code (one pre-existing `repo.rs` lint from the newer local toolchain is unrelated and outside the diff). Behavioral checks on the built binary: listing, user-dir merge + same-name override/dedup, the `GIT_CLIFF_TEMPLATES_DIR` env var, `--init <name> --templates-dir` writing user content, the missing-directory error, and both commands working outside a git repository. One atomic commit (`3e0fb4b`), no AI attribution.
 
 ### Second git-cliff contribution — PR #1584 (clap `--config` cleanup, #1182)
 

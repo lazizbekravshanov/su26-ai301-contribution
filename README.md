@@ -48,7 +48,7 @@ Every cycle's Phase II plan follows the **UMPIRE** framework (Understand → Mat
 |---|---|---|---|---|
 | **1 — marimo-lsp #154** | The extension's execute-cells request never filters `@app.cell(disabled=True)` — the LSP server and kernel are correct; the gap is the request builder | marimo's own frontend **and** the kernel's reactive scheduler (`graph.is_disabled` in `cell_runner.py`) both skip disabled cells — the behavior to mirror at the extension layer | `extension/src/lib/extractExecuteCodeRequest.ts`; `extension/src/schemas/MarimoNotebookDocument.ts` | Proved the wire format (`options:{"disabled":true}`) by *running* the LSP deserialize path rather than guessing · edge case caught: missing `return` before `Option.none()` (a 2nd latent bug) · regression test red→green + manual F5 |
 | **2 — pyfixest #1244** | Always-treated unit → first stage estimates a FE level on a data subset → NaN predictions → `_second_u` shorter than `_first_u` → an opaque broadcast `ValueError` at `did2s.py:355`. Root cause = the unestimable FE level, **not** the broadcast error | The maintainer's shared `predict` / `_apply_fixef_numpy(warn=True)` path (where the fix ultimately landed) | `pyfixest/did/did2s.py` | Issue timeline dates the bug to 2026-03-11 (maintainer-confirmed, never fixed) · built a synthetic always-treated-unit panel as a *natural* repro · regression test in `tests/test_errors.py`; 686 passed |
-| **3 — pyfixest #829** | numba `@njit` bodies never execute as traced Python bytecode, so codecov can't see them; `NUMBA_DISABLE_JIT=1` runs them as Python (reproduced: `demean_nb` 17% → 100%) | The existing weekly `extended_tests.yaml` + `pixi` task structure | `test-py-nojit` pixi task; two steps in `.github/workflows/extended_tests.yaml`; `.gitignore` | Code + history search found `detect_singletons` had migrated numba→**Rust** (`_detect_singletons_rs`, so excluded) and JAX was obsolete — scope corrected before coding · edge case: slow run → weekly-only · full no-jit run 274 passed |
+| **3 — pyfixest #829** | numba `@njit` bodies never execute as traced Python bytecode, so codecov can't see them; `NUMBA_DISABLE_JIT=1` runs them as Python (reproduced: `demean_nb` 17% → 100%) | The existing weekly `extended_tests.yaml` + `pixi` task structure | `test-py-nojit` pixi task; two steps in `.github/workflows/extended_tests.yaml`; `.gitignore` | Code + history search found `detect_singletons` had migrated numba→**Rust** (`_detect_singletons_rs`, so excluded) and JAX was obsolete — scope corrected before coding · edge case: slow run → weekly-only · full no-jit run 278 passed (widened to cover find_collinear + nested_fixef) |
 | **4 — OCS #2979** | Feature, not a bug: verified MiniMax's **actual** API shapes first (chat = OpenAI-compatible `/v1`; voice T2A = custom `/v1/t2a_v2` with a `GroupId` query param + Bearer) before wiring anything | Chat → groq/perplexity via `OpenAIGenericService`; voice → ElevenLabs (direct-return) + Intron (custom-HTTP seeding) — three concrete in-repo analogs | `service_providers/models.py`, `forms.py`, `llm_service/*`, `speech_service.py`, `default_models.py`, migrations, `credentials.py`, `reconcile_models.py` | `git log` later dated `d34e0fd08` ("Freeze time in cost tracking panel tests") as the fix my stale branch lacked — root-causing a CI failure to a *stale base*, not my code · edge cases: T2A `GroupId`, `export.yml` schema drift, `TEAM_SCOPED_SERVICES` list · mocked tests (70 chat / 41 voice) |
 | **5 — git-cliff #412 / #1182** | **#1182: used `git log -S 'CONFIG_FILES'` / `--oneline` to date `.config` discovery to PR #1448 (merged 2026-04-20) — the "bug" was already fixed upstream**, so I did not duplicate it; #412: confirmed no `--templates-dir` / `--list-templates` surface exists yet | #412 → the `BuiltinConfig` + `examples/*.toml` RustEmbed built-in-template pattern the codebase already uses for `--init` | `git-cliff-core/src/embed.rs`; `git-cliff/src/{args,lib,main}.rs`; docs | Behavioral test proved `.config/cliff.toml` discovery end-to-end before any code · edge cases designed up front: missing/not-a-dir `--templates-dir` = hard error, non-`.toml` ignored, works outside a git repo, explicit `--config` vs discovery · 10 TDD tests + 8 behavioral scenarios |
 
@@ -648,7 +648,7 @@ Branch `issue-829-numba-nojit-coverage` off upstream `6ae0293b`. The change is C
 
 | File | Change |
 |---|---|
-| `pyproject.toml` | New `test-py-nojit` pixi task: runs `test_ses` + `test_demean` with `env = { NUMBA_DISABLE_JIT = "1" }`, coverage → `coverage-nojit.xml` |
+| `pyproject.toml` | New `test-py-nojit` pixi task: runs `test_ses` + `test_demean` + `test_collinearity` + `test_count_fixef_fully_nested` with `env = { NUMBA_DISABLE_JIT = "1" }`, coverage → `coverage-nojit.xml` |
 | `.github/workflows/extended_tests.yaml` | Two steps in the weekly suite: run `test-py-nojit`, then upload its coverage under a new `tests-nojit` codecov flag (kept off per-commit CI) |
 | `.gitignore` | Ignore `coverage-nojit.xml` |
 
@@ -661,20 +661,28 @@ Branch `issue-829-numba-nojit-coverage` off upstream `6ae0293b`. The change is C
 
 ### Testing notes (manual + automated)
 
-*Automated:* the before/after coverage delta itself is the test of the change — `pixi run test-py-nojit` runs the numba tests under `NUMBA_DISABLE_JIT=1` and uploads `coverage-nojit.xml`; the numba modules jump from ~17% to ~97%. *Manual:* ran the full no-jit target set locally (274 passed / 6 skipped in ~9 min) to confirm it's green but genuinely slow — which validated the "weekly-only, not per-commit" placement.
+*Automated:* the before/after coverage delta itself is the test of the change — `pixi run test-py-nojit` runs the numba tests under `NUMBA_DISABLE_JIT=1` and uploads `coverage-nojit.xml`. *Manual:* ran each numba module's targeted test with JIT on vs. off and confirmed the surfaced coverage (all measured locally):
+
+| numba module | JIT on (today's CI) | JIT off (this task) | surfaced by |
+|---|---|---|---|
+| `demean_nb.py` | 17% | 100% | `test_demean` |
+| `find_collinear_variables_nb.py` | 12% | 88% | `test_collinearity` |
+| `nested_fixef_nb.py` | (low) | 100% | `test_count_fixef_fully_nested` |
+
+The task was **widened after the first cut** (which only ran `test_ses` + `test_demean`) to actually exercise `find_collinear_variables_nb` and `nested_fixef_nb` — closing the gap between the Phase II plan (which named those modules) and the initial implementation, so the task delivers on #829's goal for *all* live numba modules.
 
 **Verification (local, 2026-07-08):**
 
 - `pixi run lint` — all hooks green (ruff, mypy, GitHub-workflow validation, TOML/YAML checks). mypy is clean now that Cycle 2's #1369 landed.
 - Coverage delta reproduced on the numba path: `estimation/numba/demean_nb.py` **17% (JIT) → 100% (`NUMBA_DISABLE_JIT=1`)** — 17% measured on `test_demean` with JIT on; 100% in the full no-jit run.
-- The full `test-py-nojit` run is green: **274 passed, 6 skipped in 551.9s (9:11)**. It is genuinely slow (numba object mode), which is exactly why it belongs in the weekly extended suite, not per-commit CI.
+- The full `test-py-nojit` run is green: **278 passed, 6 skipped in ~9m15s (widened to cover find_collinear + nested_fixef)**. It is genuinely slow (numba object mode), which is exactly why it belongs in the weekly extended suite, not per-commit CI.
 - Setup note: a one-time `pixi run maturin develop` plus package-level `--cov=pyfixest -n0` were needed to avoid a maturin-hook / PyO3-vs-coverage import clash (documented in Phase II).
 
 **Status:** build complete, committed as `fd55007` and pushed to my fork.
 
 ## Cycle 3 — Phase IV: Submit and Iterate
 
-- **PR opened 2026-07-08**: [py-econometrics/pyfixest #1385](https://github.com/py-econometrics/pyfixest/pull/1385) — "Add a no-JIT test run so codecov captures numba coverage" (`Closes #829`). Body: Why (numba JIT code invisible to coverage) → What (the `test-py-nojit` task + weekly-suite step + new `tests-nojit` flag) → Evidence (`demean_nb` 17% → 100%; full run 274 passed / 6 skipped) → Scope notes (JAX dropped, `detect_singletons` excluded as Rust) → offer to widen the target set.
+- **PR opened 2026-07-08**: [py-econometrics/pyfixest #1385](https://github.com/py-econometrics/pyfixest/pull/1385) — "Add a no-JIT test run so codecov captures numba coverage" (`Closes #829`). Body: Why (numba JIT code invisible to coverage) → What (the `test-py-nojit` task + weekly-suite step + new `tests-nojit` flag) → Evidence (`demean_nb` 17% → 100%; full run 278 passed / 6 skipped) → Scope notes (JAX dropped, `detect_singletons` excluded as Rust) → offer to widen the target set.
 - Opened proactively rather than waiting for the claim-comment reply (same as Cycle 2's #1368) — the PR itself carries the approach and keeps the scope questions open for @s3alfisc.
 - **CI (2026-07-08): all green.** The full check matrix passed — Python 3.10/3.14 × macOS/Linux, all four R suites, Build Docs, Merge Coverage, codecov/patch, and pre-commit.ci (Publish Docs skipped, master-only). PR is `MERGEABLE`. As expected, since the diff touches only a new pixi task, the weekly workflow (not PR-triggered), and `.gitignore`, it doesn't change the per-commit test path.
 

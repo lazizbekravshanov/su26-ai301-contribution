@@ -867,6 +867,12 @@ Why git-cliff: Rust-first (a new stack for this practicum), very active (externa
 
 ## Cycle 5 — Phase I: Issue Selection
 
+### Why I Chose These Issues
+
+- **Skill match + a deliberate stretch.** After two Python cycles and a TypeScript one, I chose **Rust** specifically to add a new language to the portfolio. Both issues are CLI/tooling work (clap argument parsing, file discovery, RustEmbed) — close enough to my systems experience to be tractable as `good first issue`s, but new enough (ownership, `Option`, the borrow checker, `cargo`/nightly `rustfmt` toolchain) to be a real learning goal.
+- **Understanding.** #412 extends git-cliff's existing `--init` built-in-template mechanism (`BuiltinConfig` + `examples/*.toml`) to user-supplied preset directories; #1182 is about config-file discovery precedence. I read the config-resolution path in `git-cliff/src/lib.rs` and `git-cliff-core/src/{embed,config}.rs` before claiming, so I understood the surface I'd touch.
+- **Two issues in one repo** to reuse setup and build a maintainer relationship with @orhun across a cycle.
+
 ### Issues (maintainer-first, both approved)
 1. [#1182 — Support searching in `.config` folder](https://github.com/orhun/git-cliff/issues/1182): add `.config/cliff.toml` to config discovery. Labels: `feature/request`, `good first issue`.
 2. [#412 — Add flags and options to support user-defined templates](https://github.com/orhun/git-cliff/issues/412): `--templates-dir` + `GIT_CLIFF_TEMPLATES_DIR`, `--list-templates`, user templates overriding built-ins. Labels: `feature/request`, `good first issue`.

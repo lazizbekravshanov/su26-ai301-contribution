@@ -2,7 +2,7 @@
 
 **Name:** Lazizbek Ravshanov
 **Program:** CodePath AI301, Summer 2026
-**Status — as of 2026-07-15:** Five contribution cycles across three languages (TypeScript, Python, Rust) and four projects — **3 PRs merged** and **5 PRs in review**, of which the two open-chat-studio PRs are **maintainer-approved, rebased onto current `main`, and merge-ready**. Per-contribution status is in the table below; full per-cycle write-ups (Phase I–IV) follow, and the most recent maintainer exchanges are summarized under [Recent Maintainer Updates](#recent-maintainer-updates-2026-07-15).
+**Status — as of 2026-07-17:** Five contribution cycles across three languages (TypeScript, Python, Rust) and four projects — **4 PRs merged** and **4 PRs in review**. The most recent merge is [open-chat-studio #3800](https://github.com/dimagi/open-chat-studio/pull/3800) (2026-07-16, `9722eada`), the chat half of the MiniMax integration; its sibling voice PR [#3801](https://github.com/dimagi/open-chat-studio/pull/3801) is CI-green with the post-merge migration renumber @SmittieC asked for already pushed, awaiting only a re-approve. Per-contribution status is in the table below; full per-cycle write-ups (Phase I–IV) follow, and the most recent maintainer exchanges are summarized under [Recent Maintainer Updates](#recent-maintainer-updates-2026-07-17).
 
 ## Contributions at a Glance
 
@@ -807,11 +807,11 @@ Baseline smoke test green: `test_voice_providers.py` **34 passed**.
 
 ![Maintainer @snopoke's scope reply and issue assignment on #2979](assets/ocs2979-maintainer-reply.png)
 
-**Chat PR #3800 (opened, in review):**
+**Chat PR #3800 (opened 2026-07-09 — since approved and merged):**
 
 ![MiniMax chat PR #3800](assets/ocs3800-chat-pr.png)
 
-*Note on approvals: at the time of writing, no formal human "Approved" review has landed on #3800 yet (only an automated CodeScene health check). This section will be updated with the maintainer's review/approval when it arrives.*
+*Update (2026-07-16): #3800 was **approved by @SmittieC and merged** (merge commit [`9722eada`](https://github.com/dimagi/open-chat-studio/commit/9722eadafcf5624d50bfcffb852cc77a837bfd69)) after two rounds of his review — the `reconcile_models.py` registration (`92b9750`) and the `export.yml` schema regeneration (`6c51c7d`). The chat half of #2979 is now in `main`. The screenshot above is from the PR at open; the [Recent Maintainer Updates](#recent-maintainer-updates-2026-07-17) section carries the review-and-merge arc.*
 
 ### Review response — chat PR #3800 (2026-07-09)
 
@@ -828,7 +828,7 @@ Built the second increment on a separate branch `issue-2979-minimax-voice` (off 
 
 **TDD + a GroupId catch.** Wrote the MiniMax voice tests first in `test_voice_providers.py`, encoding the T2A contract from MiniMax's docs — including that T2A needs a **`GroupId` query parameter** (distinct from the OpenAI-compatible *chat* endpoint's Bearer-only auth). An early implementation pass omitted the GroupId; the failing test drove it out, so the config gained a `minimax_group_id` field and the request a `?GroupId=…` query param. Verified green myself before opening the PR: **40 passed** in the voice suite, `ruff check` + `ruff format` clean, `makemigrations --check` clean.
 
-**PR opened:** [dimagi/open-chat-studio #3801](https://github.com/dimagi/open-chat-studio/pull/3801) — "feat: add MiniMax as a voice (TTS) provider" (+326/−1, 8 files), `Part of #2979`. Body: what/how (T2A wiring, GroupId + Bearer, hex decode) → testing (mocked, 40 passed) → notes. Status: **OPEN, mergeable**. Known follow-up: this branch's `service_providers/migrations/0061_*` collides with chat #3800's migrations (#3800 now carries `0061` **and** a `0062_seed_minimax_models` backfill added in review), so once #3800 merges I'll rebase and renumber this to `0063` (the next free number). The branches are independent — CI on #3801 is green standalone off `main` — so this is a trivial post-merge rebase, noted in the PR body.
+**PR opened:** [dimagi/open-chat-studio #3801](https://github.com/dimagi/open-chat-studio/pull/3801) — "feat: add MiniMax as a voice (TTS) provider" (+326/−1, 8 files). Body: what/how (T2A wiring, GroupId + Bearer, hex decode) → testing (mocked, 40 passed) → notes. Because @snopoke asked for the work as **two PRs**, the close keyword lives on the completing one: #3800 (chat) carries `Part of #2979`, and this PR carries **`Closes #2979`** — so the issue closes when the second half lands. Status: **OPEN, mergeable**. Known follow-up: this branch's `service_providers/migrations/0061_*` collides with chat #3800's migrations (#3800 now carries `0061` **and** a `0062_seed_minimax_models` backfill added in review), so once #3800 merges I'll rebase and renumber this to `0063` (the next free number). The branches are independent — CI on #3801 is green standalone off `main` — so this is a trivial post-merge rebase, noted in the PR body.
 
 > **Outcome (2026-07-17).** The plan held but the number moved twice: the 2026-07-15 rebase took this to `0063`, then #3800's merge — which by then carried *two* migrations (`0063` + the `0064_seed_minimax_models` backfill added during review) — pushed the free number to `0065`. Renumbered accordingly in `534282e`. See [Recent Maintainer Updates](#recent-maintainer-updates-2026-07-17).
 
@@ -865,9 +865,11 @@ With all three PRs open and awaiting review, I did a proactive self-review pass 
 
 **Learnings (Cycle 4):** three things stood out. (1) *Reconciling with tests written in parallel* — a set of MiniMax voice tests appeared in the repo mid-build; treating them as the spec (rather than overwriting) actually corrected my code (they encoded the `GroupId` query param I'd missed). (2) *Verifying a bot's review against convention* before acting — CodeRabbit was right, but I confirmed it matched how the repo actually seeds models rather than blindly complying. (3) *Following an existing provider pattern end-to-end* (enum → form → service → seeding → migration → credentials) is the difference between a provider that "works in a test" and one wired in like its peers.
 
-### What we're waiting on / next
-- **Voice #3801 is approved** (@SmittieC); **chat #3800** review addressed — awaiting merge.
-- On chat merge: **rebase the voice branch** to renumber its migration past chat's (`0061 → 0063`), then re-push #3801.
+### What we're waiting on / next (as of 2026-07-17)
+- **Chat #3800 — MERGED** 2026-07-16 (`9722eada`, approved by @SmittieC). Half of #2979 delivered.
+- **Voice #3801 — open, technically ready.** The planned post-merge rebase is done: migration renumbered to `0065_alter_voiceprovider_type` depending on `0064_seed_minimax_models` (`534282e`, at @SmittieC's request). CI green (`python-tests` pass); the only red check is the pre-existing advisory CodeScene "Low Cohesion" flag, whose report is byte-identical before and after the change.
+- **Blocking:** nothing technical. Both approvals (@SmittieC, @snopoke) were auto-dismissed by my later pushes, so the PR needs a re-approve — [requested on the PR](https://github.com/dimagi/open-chat-studio/pull/3801#issuecomment-4999127641), noting that `git range-diff` shows all six previously-reviewed commits replayed byte-identical so no re-review from scratch is needed.
+- **On merge:** #3801 carries `Closes #2979` (it's the completing PR of the two-PR split @snopoke asked for), so the issue closes with it.
 
 ---
 
@@ -1040,6 +1042,22 @@ PR #603 was **approved and merged by the maintainer on the first review pass** (
 - **Front-load design questions.** The claim comment asked "hard error or graceful handling?" before any code existed; the PR's design note keeps that offer open instead of presuming the answer.
 
 **Outcome:** bonus PR #1369 **merged same-day** (approved by @leostimpfle; @s3alfisc added me to the project's all-contributors list). Main fix #1368 **merged 2026-07-04** — on 2026-07-03 @leostimpfle reviewed and refactored it, moving the unseen-level warning into the shared `predict` path and stripping my `did2s` boilerplate; I endorsed the cleaner design, and he merged it ~18 min later (merge commit `83fdcc5`, +62/−2). Cycle 2 complete: two merged PRs into py-econometrics/pyfixest resolving #1244.
+
+### Cycle 4 Additions (2026-07-17)
+
+**Technical skills gained**
+
+- **Django's migration graph is a data structure, not a filename convention.** Splitting #2979 into two PRs meant both added a `service_providers` migration numbered `0063`. Git merged them without a murmur — different filenames, no textual overlap, no conflict markers — but Django then saw *two leaf nodes off the same parent* and refused. The lesson generalizes past Django: **a conflict your VCS can't see is still a conflict.** Any tool with its own dependency graph layered over files (migrations, lockfiles, DI registries, codegen manifests) can be broken by two changes that merge cleanly in isolation. The `Closes`-on-the-completing-PR pattern splits a feature safely; the *numbered-artifact* pattern does not split for free, and the second PR always pays.
+- **Predicting a conflict is cheaper than discovering one.** I flagged the collision on both PRs at open time and told the maintainers whichever merged second would need a re-point. That turned a surprise into a scheduled chore: when #3800 merged, @SmittieC's request was one sentence and the fix took one commit. The prediction also proved *slightly* wrong in a useful way — I'd said the free number would be `0063`, but review had added a second migration to #3800, so it was `0065`. Predicting the *shape* is durable; predicting the *value* isn't.
+- **`git range-diff` as a reviewer's courtesy.** After a force-push to an already-reviewed PR, "I only added one commit, honest" is an assertion. `range-diff` between the pre- and post-rebase ranges is evidence — it showed all six reviewed commits replaying byte-identical, which is what I put in the PR comment so nobody re-reads work they'd already approved.
+
+**Process learnings**
+
+- **Fetch upstream before you fix an upstream problem.** My fork's `origin/main` did not contain the merge I was reacting to. Rebasing there would have "resolved" the collision against a week-old `main` and re-collided on push — a fix that looks right locally and fails publicly. On a fork, `origin` is a cache with no obligation to be current; the truth is `upstream`.
+- **A tool warning is a claim, not a verdict.** `ruff format --check` wanted to reformat my migration, but `migrations` sits in the repo's ruff `exclude` list and `main`'s own migrations "fail" the same check — naming the file explicitly had bypassed the exclusion. Obeying it would have added churn the project deliberately avoids. Same discipline caught a red `Links` check on #1584: the 403s came from GitLab bouncing CI to a sign-in page, and the job fails intermittently on `main` too. **Before fixing a red check, establish whether it's red for you or red for everyone.**
+- **Approvals are perishable.** Both maintainer approvals on #3801 were auto-dismissed by my own later pushes — including pushes that fixed things they'd asked for. Worth knowing that responsiveness has a cost: every improvement after an approval spends that approval.
+
+**Outcome:** chat PR **#3800 merged 2026-07-16** (merge commit `9722eada`), approved by @SmittieC after two review rounds — the first half of #2979 is in `main`. Voice PR #3801 is technically ready (CI green, migration renumbered to `0065` at @SmittieC's request in `534282e`) and awaiting only a re-approve; it carries `Closes #2979`, so the issue closes when it lands.
 
 ---
 

@@ -1050,6 +1050,22 @@ PR #603 was **approved and merged by the maintainer on the first review pass** (
 
 **Outcome:** bonus PR #1369 **merged same-day** (approved by @leostimpfle; @s3alfisc added me to the project's all-contributors list). Main fix #1368 **merged 2026-07-04** — on 2026-07-03 @leostimpfle reviewed and refactored it, moving the unseen-level warning into the shared `predict` path and stripping my `did2s` boilerplate; I endorsed the cleaner design, and he merged it ~18 min later (merge commit `83fdcc5`, +62/−2). Cycle 2 complete: two merged PRs into py-econometrics/pyfixest resolving #1244.
 
+### Cycle 3 Additions (2026-07-19)
+
+**Technical skills gained**
+
+- Why JIT-compiled numba is invisible to coverage tooling, and how `NUMBA_DISABLE_JIT=1` turns `@njit` bodies back into traced Python so Codecov can see them — plus the second half most people miss: making the code *execute* under no-JIT only helps if the files aren't also `ignore`d in `codecov.yml`. Both halves are required.
+- pyfixest's CI shape: a weekly "extended" suite separate from the per-PR matrix, gated with `schedule` / `workflow_dispatch` triggers, and Codecov **carryforward** — the mechanism that lets a weekly-only coverage job keep counting on ordinary PR runs where that job doesn't fire.
+
+**Process learnings**
+
+- **Verify an old issue against current `master` before writing a line.** #829 was 16 months old; the JAX half was obsolete and `detect_singletons` had migrated numba→Rust, so following the issue literally would have shipped dead code. The scope correction *was* the first real deliverable.
+- **A good review comment on your own PR still improves the result.** When the maintainer finalized the CI wiring himself, I reviewed his commit and flagged that regular PRs could show `numba/*` as uncovered unless carryforward handled it — and that point became his final commit (`bbb3c1e5`) before merge.
+
+**Outcome:** PR #1385 **merged 2026-07-19** (`ba1fdbd5`, @s3alfisc), auto-closing #829; all-contributors credit requested (infra). Cycle 3 complete.
+
+**Cross-cycle pattern (Cycles 2 + 3).** On both pyfixest contributions the maintainer took the PR the last mile himself — @leostimpfle refactored #1368 into the shared `predict` path, and @s3alfisc wired #1385's weekly CI + carryforward. In each case I endorsed the cleaner approach rather than defending my original, and in each case my input still shaped the merged result. Collaborative finalization is a normal, healthy end state for an OSS PR — not a sign the original was wrong.
+
 ### Cycle 4 Additions (2026-07-17)
 
 **Technical skills gained**

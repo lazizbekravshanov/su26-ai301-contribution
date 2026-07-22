@@ -18,7 +18,23 @@
 | 5 | [#412 — Add flags and options to support user-defined templates](https://github.com/orhun/git-cliff/issues/412) | [orhun/git-cliff](https://github.com/orhun/git-cliff) (Rust) | [PR #1583](https://github.com/orhun/git-cliff/pull/1583) — `--templates-dir <PATH>` + `GIT_CLIFF_TEMPLATES_DIR`, `--list-templates`, user templates override built-ins | 🔄 **In review** — opened 2026-07-13; TDD (10 tests), workspace `cargo test`/`clippy`/`fmt` green. All CI tests pass; the one red check is a transient Codecov-upload infra failure (noted on the PR) |
 | 5b | [#1182 — Support searching in `.config` folder](https://github.com/orhun/git-cliff/issues/1182) | [orhun/git-cliff](https://github.com/orhun/git-cliff) (Rust) | `.config` discovery already upstream ([#1448](https://github.com/orhun/git-cliff/pull/1448)); [PR #1584](https://github.com/orhun/git-cliff/pull/1584) — clap `--config` → `Option` cleanup (@orhun-requested follow-up) | 🔄 **In review** — verified #1448 covers discovery; @orhun asked for the residual clap-`Option` cleanup → PR #1584 opened 2026-07-13 (behavior-preserving) |
 
-Cycle 1 (#154) is documented in full below, unchanged; Cycle 2 (#1244) documentation starts at [Cycle 2](#cycle-2); Cycle 3 (#829) starts at [Cycle 3](#cycle-3).
+## Contents
+
+- [Contributions at a Glance](#contributions-at-a-glance) — status table for all contributions
+- [Recent Maintainer Updates](#recent-maintainer-updates-2026-07-17) — latest reviews, merges, and follow-ups
+- [Planning Method — UMPIRE](#planning-method--umpire-across-all-cycles) — the framework applied every cycle
+
+Each cycle below follows the same Phase I–IV structure (Issue Selection → Reproduce & Plan → Build → Submit & Iterate):
+
+| Cycle | Issue | Project (language) | Status |
+|---|---|---|---|
+| **[1](#cycle-1)** | marimo-lsp #154 | VS Code extension (TypeScript/Python) | ✅ merged |
+| **[2](#cycle-2)** | pyfixest #1244 | econometrics library (Python) | ✅ 2 merged |
+| **[3](#cycle-3)** | pyfixest #829 | numba coverage CI (Python) | ✅ merged |
+| **[4](#cycle-4)** | open-chat-studio #2979 | chatbot platform (Python/Django) | ✅ 2 merged |
+| **[5](#cycle-5)** | git-cliff #412 / #1182 | changelog CLI (Rust) | 🔄 2 in review |
+
+- [Learnings & Reflections](#learnings--reflections) · [Resources Used](#resources-used) · [AI Tool Usage Log](#ai-tool-usage-log)
 
 ---
 
@@ -72,6 +88,8 @@ Every cycle's Phase II plan follows the **UMPIRE** framework (Understand → Mat
 | **5 — git-cliff #412 / #1182** | **#1182: used `git log -S 'CONFIG_FILES'` / `--oneline` to date `.config` discovery to PR #1448 (merged 2026-04-20) — the "bug" was already fixed upstream**, so I did not duplicate it; #412: confirmed no `--templates-dir` / `--list-templates` surface exists yet | #412 → the `BuiltinConfig` + `examples/*.toml` RustEmbed built-in-template pattern the codebase already uses for `--init` | `git-cliff-core/src/embed.rs`; `git-cliff/src/{args,lib,main}.rs`; docs | Behavioral test proved `.config/cliff.toml` discovery end-to-end before any code · edge cases designed up front: missing/not-a-dir `--templates-dir` = hard error, non-`.toml` ignored, works outside a git repo, explicit `--config` vs discovery · 10 TDD tests + 8 behavioral scenarios |
 
 ---
+
+# Cycle 1
 
 ## Project
 

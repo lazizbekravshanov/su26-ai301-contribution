@@ -24,6 +24,10 @@
 - [Recent Maintainer Updates](#recent-maintainer-updates-2026-07-17) — latest reviews, merges, and follow-ups
 - [Planning Method — UMPIRE](#planning-method--umpire-across-all-cycles) — the framework applied every cycle
 
+**Companion documents:**
+- 📝 [REFLECTIONS.md](REFLECTIONS.md) — plain-language, per-issue reflection: what each change did and how it helped the community
+- 🧭 [FEEDBACK-CHECKLIST.md](FEEDBACK-CHECKLIST.md) — running checklist of all maintainer/reviewer/mentor feedback, used as a pre-submission self-review
+
 Each cycle below follows the same Phase I–IV structure (Issue Selection → Reproduce & Plan → Build → Submit & Iterate):
 
 | Cycle | Issue | Project (language) | Status |

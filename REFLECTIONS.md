@@ -7,7 +7,7 @@ matters most — **how it helped the people who use and maintain these projects.
 The formal phase-by-phase write-ups are in [README.md](README.md); this is the version that
 explains the actual engineering and its impact.
 
-**Summary:** 6 pull requests merged, 2 in review — across four projects and three languages
+**Summary:** 6 pull requests merged, 2 in review, and 1 new draft — across five projects and three languages
 (TypeScript, Python, Rust).
 
 ---
@@ -233,6 +233,50 @@ a more maintainable codebase (an honest `Option` instead of a sentinel default v
 easy to overlook — by **verifying the feature already existed and choosing not to duplicate it, I
 saved the maintainer from reviewing redundant work.** Declining to add code is sometimes the most
 useful contribution. [PR #1584](https://github.com/orhun/git-cliff/pull/1584) — in review.
+
+---
+
+## Cycle 6 — pudl #5081: give a year-less energy table its years back
+
+**Project.** [catalyst-cooperative/pudl](https://github.com/catalyst-cooperative/pudl) — the Public
+Utility Data Liberation project, a Python pipeline that turns messy US government energy filings
+(EIA, FERC, EPA) into clean, analysis-ready tables that researchers and journalists actually use.
+
+**The specific problem ([#5081](https://github.com/catalyst-cooperative/pudl/issues/5081)).** One
+EIA-923 table — monthly coal, oil, and petcoke *stocks* by region — was downloaded and extracted but
+never integrated into the database. The task was to clean it, reshape it, and add it.
+
+**The exact part of the software.** The EIA-923 extract and transform layers
+(`src/pudl/extract/eia923.py`, `src/pudl/transform/eia923.py`) and the unit-test suite. The raw table
+lands as a Dagster asset; my job was to build the cleaned "core" table from it.
+
+**What I actually did (concretely).**
+- **Materialized the raw table and found the real problem.** Instead of trusting the schema, I
+  downloaded the data, materialized `raw_eia923__stocks`, and inspected it — and discovered it has
+  **no year column at all.** 1,481 rows, 36 monthly fuel columns, a region label... and no way to
+  tell 2001 from 2026. Every region had 26 undifferentiated rows.
+- **Root-caused it.** The EIA-923 extractor only *fixes* a `report_year` when one already exists; it
+  never *injects* one. Other datasets (`eia176`, `eia860m`) attach the year from the file's partition
+  when it's missing — EIA-923 doesn't, and the stocks spreadsheet has no year column, so the year
+  (known at extract time) was silently dropped.
+- **Fixed the extractor** to inject the partition year for the stocks page, then **wrote the
+  transform** (`_core_eia923__yearly_fuel_stocks`) that reshapes the wide monthly columns into tidy
+  monthly records with a `report_date`, using the project's *own* reshape helper
+  (`_yearly_to_monthly_records`) rather than my first hand-rolled version — reading their helper
+  showed it produces exactly the schema the maintainers wanted.
+- **Verified end to end:** re-materialized (year now spans 2001–2026), ran the transform on the full
+  table (17,772 clean monthly rows), and added a unit test — 32 tests pass, linter clean.
+
+**How this helped the community.** A dataset that was sitting unusable — you literally couldn't tell
+which year a stock figure belonged to — now has a clear path into PUDL, where energy researchers can
+query monthly fuel stocks over 25 years. And the *diagnosis itself* is a gift to the maintainers:
+I surfaced a real extractor gap (a whole class of "year-less page" that loses its year), backed by
+evidence, and asked how they'd like it resolved rather than guessing — which is why the PR opens as a
+draft with a design question, exactly at the checkpoint their own issue prescribes.
+
+**Outcome.** [Draft PR #5431](https://github.com/catalyst-cooperative/pudl/pull/5431) — the extract
+fix + transform + test, opened at the issue's feedback checkpoint with two design questions for the
+maintainers; the remaining integration (metadata, validation tests, migration) follows their answer.
 
 ---
 

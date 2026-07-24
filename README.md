@@ -4,7 +4,7 @@
 **Program:** CodePath AI301, Summer 2026
 > 🧭 **[Combined Feedback Checklist](FEEDBACK-CHECKLIST.md)** — a running, checklist-format log of every maintainer/reviewer/mentor note across cycles, used as a pre-submission self-review (mentor-suggested habit).
 
-**Status — as of 2026-07-22:** Five contribution cycles across three languages (TypeScript, Python, Rust) and four projects — **6 PRs merged** and **2 PRs in review** (git-cliff #1583, #1584 — both complete and green, awaiting @orhun's review; one-week check-in nudges posted 2026-07-20). **Cycle 3 closed 2026-07-19:** pyfixest [#1385](https://github.com/py-econometrics/pyfixest/pull/1385) merged (`ba1fdbd5`), auto-closing [#829](https://github.com/py-econometrics/pyfixest/issues/829) — @s3alfisc finalized the CI wiring himself and adjusted the final commit in direct response to a coverage-carryforward point I raised. **Cycle 4 closed 2026-07-17:** both halves of the MiniMax integration are in open-chat-studio's `main` — chat [#3800](https://github.com/dimagi/open-chat-studio/pull/3800) (`9722eada`) and voice [#3801](https://github.com/dimagi/open-chat-studio/pull/3801) (`aac1f5c9`) — with issue [#2979](https://github.com/dimagi/open-chat-studio/issues/2979) auto-closed. The 2 still open are the git-cliff PRs (#1583, #1584), awaiting @orhun's review. Per-contribution status is in the table below; full per-cycle write-ups (Phase I–IV) follow, and the most recent maintainer exchanges are summarized under [Recent Maintainer Updates](#recent-maintainer-updates-2026-07-17).
+**Status — as of 2026-07-24:** Six contribution cycles across three languages (TypeScript, Python, Rust) and five projects — **6 PRs merged**, **2 in review** (git-cliff #1583, #1584 — complete and green, awaiting @orhun; one-week nudges posted 2026-07-20), and a **new draft PR** ([pudl #5431](https://github.com/catalyst-cooperative/pudl/pull/5431), Cycle 6). **Cycle 6 opened 2026-07-24:** integrating EIA-923 fuel-stocks data into [catalyst-cooperative/pudl](https://github.com/catalyst-cooperative/pudl) ([#5081](https://github.com/catalyst-cooperative/pudl/issues/5081)) — materialized the raw table, root-caused a missing-`report_year` gap in the extractor, and opened a draft PR (`bccefcb9`, extract fix + transform + test, 32 tests green) at the issue's design-feedback checkpoint. **Cycle 3 closed 2026-07-19:** pyfixest [#1385](https://github.com/py-econometrics/pyfixest/pull/1385) merged (`ba1fdbd5`), auto-closing [#829](https://github.com/py-econometrics/pyfixest/issues/829) — @s3alfisc finalized the CI wiring himself and adjusted the final commit in direct response to a coverage-carryforward point I raised. **Cycle 4 closed 2026-07-17:** both halves of the MiniMax integration are in open-chat-studio's `main` — chat [#3800](https://github.com/dimagi/open-chat-studio/pull/3800) (`9722eada`) and voice [#3801](https://github.com/dimagi/open-chat-studio/pull/3801) (`aac1f5c9`) — with issue [#2979](https://github.com/dimagi/open-chat-studio/issues/2979) auto-closed. The 2 still open are the git-cliff PRs (#1583, #1584), awaiting @orhun's review. Per-contribution status is in the table below; full per-cycle write-ups (Phase I–IV) follow, and the most recent maintainer exchanges are summarized under [Recent Maintainer Updates](#recent-maintainer-updates-2026-07-17).
 
 ## Contributions at a Glance
 
@@ -17,6 +17,7 @@
 | 4 | [#2979 — MiniMax integration for chat and voice](https://github.com/dimagi/open-chat-studio/issues/2979) | [dimagi/open-chat-studio](https://github.com/dimagi/open-chat-studio) (Python / Django) | Chat: [PR #3800](https://github.com/dimagi/open-chat-studio/pull/3800) — OpenAI-compatible LLM provider · Voice: [PR #3801](https://github.com/dimagi/open-chat-studio/pull/3801) — MiniMax T2A (TTS) provider | ✅ **BOTH MERGED — issue closed.** Chat #3800 merged 2026-07-16 (`9722eada`); voice #3801 merged 2026-07-17 (`aac1f5c9`), both by @SmittieC. Issue #2979 **auto-closed** 2026-07-17 (`COMPLETED`) via the `Closes #2979` on the completing PR. The two-PR split @snopoke requested meant #3800's `0063`/`0064` migrations collided with #3801's `0063`; at @SmittieC's request I rebased onto post-merge `main` and renumbered to `0065` depending on `0064_seed_minimax_models` (`534282e`) — he re-approved and merged **53 seconds later**. `0065_alter_voiceprovider_type` is live on upstream `main` |
 | 5 | [#412 — Add flags and options to support user-defined templates](https://github.com/orhun/git-cliff/issues/412) | [orhun/git-cliff](https://github.com/orhun/git-cliff) (Rust) | [PR #1583](https://github.com/orhun/git-cliff/pull/1583) — `--templates-dir <PATH>` + `GIT_CLIFF_TEMPLATES_DIR`, `--list-templates`, user templates override built-ins | 🔄 **In review** — opened 2026-07-13; TDD (10 tests), workspace `cargo test`/`clippy`/`fmt` green. All CI tests pass; the one red check is a transient Codecov-upload infra failure (noted on the PR) |
 | 5b | [#1182 — Support searching in `.config` folder](https://github.com/orhun/git-cliff/issues/1182) | [orhun/git-cliff](https://github.com/orhun/git-cliff) (Rust) | `.config` discovery already upstream ([#1448](https://github.com/orhun/git-cliff/pull/1448)); [PR #1584](https://github.com/orhun/git-cliff/pull/1584) — clap `--config` → `Option` cleanup (@orhun-requested follow-up) | 🔄 **In review** — verified #1448 covers discovery; @orhun asked for the residual clap-`Option` cleanup → PR #1584 opened 2026-07-13 (behavior-preserving) |
+| 6 | [#5081 — Integrate EIA 923 Stocks Data](https://github.com/catalyst-cooperative/pudl/issues/5081) | [catalyst-cooperative/pudl](https://github.com/catalyst-cooperative/pudl) (Python) | [Draft PR #5431](https://github.com/catalyst-cooperative/pudl/pull/5431) — inject `report_year` in the stocks extract + `_core_eia923__yearly_fuel_stocks` transform (wide monthly coal/oil/petcoke → tall monthly records) + unit test | 📝 **Draft (in review)** — opened 2026-07-24 at the issue's 🛑 design-feedback checkpoint; materialized the raw table, root-caused a missing-`report_year` gap, verified 17,772-row transform + 32 tests green / ruff clean. Asks 2 design questions; metadata/DBT/migration to follow |
 
 ## Contents
 
@@ -37,6 +38,7 @@ Each cycle below follows the same Phase I–IV structure (Issue Selection → Re
 | **[3](#cycle-3)** | pyfixest #829 | numba coverage CI (Python) | ✅ merged |
 | **[4](#cycle-4)** | open-chat-studio #2979 | chatbot platform (Python/Django) | ✅ 2 merged |
 | **[5](#cycle-5)** | git-cliff #412 / #1182 | changelog CLI (Rust) | 🔄 2 in review |
+| **[6](#cycle-6)** | pudl #5081 | energy-data pipeline (Python) | 📝 draft PR (in review) |
 
 - [Learnings & Reflections](#learnings--reflections) · [Resources Used](#resources-used) · [AI Tool Usage Log](#ai-tool-usage-log)
 
@@ -90,6 +92,7 @@ Every cycle's Phase II plan follows the **UMPIRE** framework (Understand → Mat
 | **3 — pyfixest #829** | numba `@njit` bodies never execute as traced Python bytecode, so codecov can't see them; `NUMBA_DISABLE_JIT=1` runs them as Python (reproduced: `demean_nb` 17% → 100%) | The existing weekly `extended_tests.yaml` + `pixi` task structure | `test-py-nojit` pixi task; two steps in `.github/workflows/extended_tests.yaml`; `.gitignore` | Code + history search found `detect_singletons` had migrated numba→**Rust** (`_detect_singletons_rs`, so excluded) and JAX was obsolete — scope corrected before coding · edge case: slow run → weekly-only · full no-jit run 278 passed (widened to cover find_collinear + nested_fixef) |
 | **4 — OCS #2979** | Feature, not a bug: verified MiniMax's **actual** API shapes first (chat = OpenAI-compatible `/v1`; voice T2A = custom `/v1/t2a_v2` with a `GroupId` query param + Bearer) before wiring anything | Chat → groq/perplexity via `OpenAIGenericService`; voice → ElevenLabs (direct-return) + Intron (custom-HTTP seeding) — three concrete in-repo analogs | `service_providers/models.py`, `forms.py`, `llm_service/*`, `speech_service.py`, `default_models.py`, migrations, `credentials.py`, `reconcile_models.py` | `git log` later dated `d34e0fd08` ("Freeze time in cost tracking panel tests") as the fix my stale branch lacked — root-causing a CI failure to a *stale base*, not my code · edge cases: T2A `GroupId`, `export.yml` schema drift, `TEAM_SCOPED_SERVICES` list · mocked tests (70 chat / 41 voice) |
 | **5 — git-cliff #412 / #1182** | **#1182: used `git log -S 'CONFIG_FILES'` / `--oneline` to date `.config` discovery to PR #1448 (merged 2026-04-20) — the "bug" was already fixed upstream**, so I did not duplicate it; #412: confirmed no `--templates-dir` / `--list-templates` surface exists yet | #412 → the `BuiltinConfig` + `examples/*.toml` RustEmbed built-in-template pattern the codebase already uses for `--init` | `git-cliff-core/src/embed.rs`; `git-cliff/src/{args,lib,main}.rs`; docs | Behavioral test proved `.config/cliff.toml` discovery end-to-end before any code · edge cases designed up front: missing/not-a-dir `--templates-dir` = hard error, non-`.toml` ignored, works outside a git repo, explicit `--config` vs discovery · 10 TDD tests + 8 behavioral scenarios |
+| **6 — pudl #5081** | Materialized the raw `raw_eia923__stocks` asset and found it has **no `report_year`** — root-caused to the eia923 extractor only *fixing* an existing year, never *injecting* one (unlike eia176/eia860m), so the year-less stocks page loses its year on concat | The recent `_core_eia923__yearly_byproduct_disposition` transform (+ blocking `@asset_check`) for structure; the issue-prescribed, already-tested `_yearly_to_monthly_records()` helper for the wide→tall reshape | `src/pudl/extract/eia923.py` (inject year); `src/pudl/transform/eia923.py` (new `_core_eia923__yearly_fuel_stocks`); `tests/unit/transform/eia923_test.py` | Verified the fix by re-materializing (year now 2001–2026) and running the transform on the full table (17,772 rows) before writing it into the module · caught stale issue docs (mamba/`--dataset`) vs current pixi CLI · used the repo's reshape helper instead of a hand-rolled melt (right schema) · 32 unit tests green, ruff clean |
 
 ---
 
@@ -1025,6 +1028,154 @@ The #1182 investigation surfaced a residual improvement (@joshka's original poin
 - **Screenshot capture of long PR threads.** Headless Chrome renders GitHub comments only on warm loads (cold loads showed skeleton placeholders), and heights above ~4800px failed outright. Worked around it by capturing tall then top-cropping with a tiny stdlib PNG cropper (no PIL/ffmpeg available; PEP 668 blocked `pip`).
 
 **Learnings (Cycle 5, so far):** *verify live state before building — even after approval.* A maintainer's "go ahead" is necessary but not sufficient; the codebase is the source of truth. Checking `main` (and proving it with a behavioral test) turned #1182 from "write a PR" into "don't waste the maintainer's time reviewing a duplicate," which is the more valuable contribution. Also reinforced: keep the AI-policy check per-repo (git-cliff allows it; Ruma bans it — and that boundary is respected, not worked around).
+
+---
+
+# Cycle 6
+
+## Cycle 6 — Project
+
+**Project:** [catalyst-cooperative/pudl](https://github.com/catalyst-cooperative/pudl) (Python)
+**My fork:** https://github.com/lazizbekravshanov/pudl
+
+PUDL (the Public Utility Data Liberation project) is a Python data pipeline that cleans and
+standardizes US energy data — from EIA, FERC, and EPA — into analysis-ready tables for
+researchers, journalists, and policymakers. It's a mission-driven civic-data project with a
+Dagster-based ETL, a `pixi` toolchain, and a DBT validation layer.
+
+## Cycle 6 — Phase I: Issue Selection
+
+### Issue
+
+[catalyst-cooperative/pudl #5081 — Integrate EIA 923 Stocks Data](https://github.com/catalyst-cooperative/pudl/issues/5081).
+Labels: `good first issue`, `new-data`, `eia923`. The EIA-923 fossil-fuel *stocks* table (monthly
+coal/oil/petcoke stocks by region) is archived and extracted but not yet integrated into the PUDL
+database; the task is to clean, reshape, validate, and add it.
+
+### Why I Chose This Issue
+
+- **Skill match:** it's Python data-engineering — pandas reshaping, a real ETL, and a test layer —
+  which builds directly on the pyfixest (Cycle 2/3) work while adding a new stack (Dagster, DBT).
+- **Learning goal:** learn a production data pipeline end-to-end — how a raw archive becomes a
+  materialized asset, how transforms are structured as Dagster assets, and how DBT validates them.
+- **Understanding + strategy:** I deliberately searched *past* the headline repos. Classmates farm
+  the popular projects (airflow, oppia) and their fresh issues get claimed within days; I looked for
+  a **genuinely untouched** issue in an active-but-under-farmed repo. #5081 was verified pristine
+  (open, unassigned, **zero comments**), in a repo pushing commits daily, with a well-scaffolded
+  issue body — the sweet spot.
+
+### Definition of Done
+
+Per the issue's success criteria: the stocks data is extracted into a cleaned, well-normalized table
+with defined metadata, and every new table is validated by DBT tests. Because the issue is a
+new-data integration with a **🛑 "open a draft PR for feedback before continuing"** checkpoint, the
+first milestone is a reviewed transform increment; the full integration (asset wiring, metadata, DBT,
+migration, docs) follows maintainer sign-off.
+
+### Phase I Outcome
+
+Verified claimability thoroughly (checklist rule #1): open, unassigned, zero comments, and the three
+cross-references on the issue were benign (a "good first issue" template PR and an unrelated EIA-191
+table PR), **not** an in-progress implementation. Genuinely available.
+
+## Cycle 6 — Phase II: Reproduce and Plan
+
+### Environment Setup (2026-07-24) — challenges + resolutions
+
+- Forked to `lazizbekravshanov/pudl`, cloned to `~/pet/pudl`, added `upstream`.
+- **Toolchain drift (caught):** the issue's setup steps say `mamba activate pudl-dev` and
+  `pudl_datastore --dataset eia923`, but the current repo uses **`pixi`** and the CLI now takes the
+  dataset **positionally** (`pudl_datastore eia923`). Verifying commands against the live repo rather
+  than the (stale) issue text — a FEEDBACK-CHECKLIST habit — saved a confusing failure. Offered to fix
+  the docs in the PR.
+- `pixi install` built the env; set `PUDL_INPUT`/`PUDL_OUTPUT`/`DAGSTER_HOME`; downloaded the EIA-923
+  archives (`pudl_datastore eia923`, ~362 MB — far lighter than PUDL's full multi-dataset footprint,
+  which cleared the main feasibility risk).
+
+### Reproduction — confirming the real gap (the finding)
+
+Rather than assume, I **materialized** the raw asset
+(`dagster asset materialize --select '*raw_eia923__stocks' -m pudl.definitions`) and inspected it.
+The finding, with evidence:
+
+- `raw_eia923__stocks` is 1,481 rows: `census_division_and_state` + 36 fuel columns (coal/oil/petcoke ×
+  12 months) + `data_maturity`/`early_release` — and **no `report_year`/`report_date` column at all**.
+- Every region has exactly **26 rows** spanning 2001–2026, but nothing distinguishes the years — the
+  data is multi-year yet the year is unrecoverable from the table as extracted. (The region field is
+  also messy: 118 raw values collapse to 68 after stripping trailing whitespace.)
+- **Root cause, traced:** `pudl.extract.eia923` only *corrects* an existing `report_year`
+  (`if "report_year" in df.columns`) and — unlike `eia176`/`eia860m`/`censuspep`, which inject the
+  partition year when it's missing — never *adds* one. The stocks spreadsheets have no year column, so
+  the partition year (known at extract time) is never attached.
+
+This is exactly the design question the issue's 🛑 checkpoint anticipates, so it became the basis for a
+substantive claim + draft PR rather than a generic "I'd like to work on this."
+
+### Solution Approach (UMPIRE)
+
+- **Understand — root cause (not symptom):** the stocks table is unusable because the extractor never
+  injects `report_year` for the year-less stocks page; the reshape and cleaning are downstream of that.
+- **Match — in-repo pattern:** `_core_eia923__yearly_byproduct_disposition` (a recent `_core` transform
+  with a blocking `@asset_check`) for structure; the `_yearly_to_monthly_records()` helper (which the
+  issue explicitly names, and which is already unit-tested) for the wide→tall reshape.
+- **Plan — files:** `src/pudl/extract/eia923.py` (inject year), `src/pudl/transform/eia923.py` (new
+  transform), `tests/unit/transform/eia923_test.py` (test). Metadata/DBT/migration deferred to the
+  post-checkpoint increment.
+- **Review/Evaluate:** validate on the full materialized table before writing anything into the module.
+
+## Cycle 6 — Phase III: Build (2026-07-24)
+
+Branch `issue-5081-eia923-fuel-stocks`, commit **`bccefcb9`** (3 files, +107 lines):
+
+1. **Extract fix** (`src/pudl/extract/eia923.py`): inject `report_year` from the partition for the
+   stocks page when absent, mirroring the `eia176`/`eia860m` pattern.
+2. **Transform** (`src/pudl/transform/eia923.py`): add `_core_eia923__yearly_fuel_stocks` —
+   `standardize_na_values` → `_yearly_to_monthly_records` (reshape, one column per fuel type) →
+   `convert_to_date` → strip `census_division_and_state` → coerce fuel columns to numeric.
+3. **Test** (`tests/unit/transform/eia923_test.py`): a fixture-based unit test for the reshape/clean
+   behaviour, placed alongside the existing `_yearly_to_monthly_records` tests (repo pattern).
+
+**Verification (evidence before assertions):**
+- Re-materialized with the fix → `report_year` now present (2001–2026).
+- Ran the transform on the full materialized table → **17,772** tidy monthly rows (1,481 × 12),
+  `report_date` 2001-01 → 2026-12, numeric coal/oil/petcoke, no trailing-whitespace regions.
+- `pytest tests/unit/transform/eia923_test.py` → **32 passed** (my new test + the existing 31);
+  `ruff check`/`format` clean.
+
+### Challenges Faced (Cycle 6)
+
+- **The missing-year discovery** was the crux — it turned a "reshape some columns" task into a
+  root-cause + extractor fix, and it's the reason the PR leads with a design question.
+- **A `proto.py` name collision** (debugging lesson): a scratch inspection script named `proto.py`
+  silently shadowed Google's `proto` package on `sys.path`, producing a misleading "circular import"
+  in an unrelated library. Renaming/removing it fixed it — a reminder that an import error deep in a
+  dependency can be caused by a local filename.
+- **Used the repo's reshape helper, not my own.** My first prototype hand-melted the columns into a
+  long `fuel_type`/`value` shape — but reading `_yearly_to_monthly_records` showed the issue wants one
+  column *per fuel type*, which the helper produces natively. Checking the in-repo pattern before
+  committing avoided shipping the wrong schema.
+
+## Cycle 6 — Phase IV: Submit and Iterate
+
+**Draft PR opened:** [catalyst-cooperative/pudl #5431](https://github.com/catalyst-cooperative/pudl/pull/5431)
+— "Integrate EIA-923 fuel stocks: report_year extract fix + transform (part of #5081)". Opened as a
+**draft at the issue's 🛑 checkpoint**, with a why-before-what body, before/after evidence, an
+acceptance checklist, and two explicit design questions for the maintainers:
+
+1. Is injecting the partition year in the extractor the preferred fix for the year-less stocks page?
+2. How should `census_division_and_state` (which mixes census divisions and individual states) be
+   standardized against PUDL's existing conventions?
+
+**Status:** open, draft, CI green on the checks that run (the full suite awaits the standard
+first-time-contributor workflow approval). `Part of #5081` for now; it switches to `Closes #5081` once
+the post-feedback integration (Dagster `@asset` + `@asset_check`, table/column metadata, DBT test,
+Alembic migration, source docs) lands.
+
+**Learnings (Cycle 6):** *materialize the real data before planning the fix.* Reading the issue and the
+schema suggested a simple reshape; **running** the raw asset surfaced the missing-year gap that
+reframes the whole task. Pairing that with the repo's own reshape helper and its draft-PR checkpoint
+turned a "good first issue" into a genuinely substantive contribution — and one where the first
+outward step is a good design question, not code written on an assumption.
 
 ---
 

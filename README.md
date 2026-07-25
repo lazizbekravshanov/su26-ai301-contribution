@@ -4,7 +4,7 @@
 **Program:** CodePath AI301, Summer 2026
 > 🧭 **[Combined Feedback Checklist](FEEDBACK-CHECKLIST.md)** — a running, checklist-format log of every maintainer/reviewer/mentor note across cycles, used as a pre-submission self-review (mentor-suggested habit).
 
-**Status — as of 2026-07-24:** Six contribution cycles across three languages (TypeScript, Python, Rust) and five projects — **6 PRs merged**, **2 in review** (git-cliff #1583, #1584 — complete and green, awaiting @orhun; one-week nudges posted 2026-07-20), and a **new draft PR** ([pudl #5431](https://github.com/catalyst-cooperative/pudl/pull/5431), Cycle 6). **Cycle 6 opened 2026-07-24:** integrating EIA-923 fuel-stocks data into [catalyst-cooperative/pudl](https://github.com/catalyst-cooperative/pudl) ([#5081](https://github.com/catalyst-cooperative/pudl/issues/5081)) — materialized the raw table, root-caused a missing-`report_year` gap in the extractor, and opened a draft PR (`bccefcb9`, extract fix + transform + test, 32 tests green) at the issue's design-feedback checkpoint. **Cycle 3 closed 2026-07-19:** pyfixest [#1385](https://github.com/py-econometrics/pyfixest/pull/1385) merged (`ba1fdbd5`), auto-closing [#829](https://github.com/py-econometrics/pyfixest/issues/829) — @s3alfisc finalized the CI wiring himself and adjusted the final commit in direct response to a coverage-carryforward point I raised. **Cycle 4 closed 2026-07-17:** both halves of the MiniMax integration are in open-chat-studio's `main` — chat [#3800](https://github.com/dimagi/open-chat-studio/pull/3800) (`9722eada`) and voice [#3801](https://github.com/dimagi/open-chat-studio/pull/3801) (`aac1f5c9`) — with issue [#2979](https://github.com/dimagi/open-chat-studio/issues/2979) auto-closed. The 2 still open are the git-cliff PRs (#1583, #1584), awaiting @orhun's review. Per-contribution status is in the table below; full per-cycle write-ups (Phase I–IV) follow, and the most recent maintainer exchanges are summarized under [Recent Maintainer Updates](#recent-maintainer-updates-2026-07-17).
+**Status — as of 2026-07-25:** Seven contribution cycles across three languages (TypeScript, Python, Rust) and six projects — **6 PRs merged**, **3 in review** (git-cliff #1583/#1584 + the new [mteb #5026](https://github.com/embeddings-benchmark/mteb/pull/5026)), and **1 draft** (pudl #5431). **Cycle 7 opened 2026-07-25:** added a SciRepEval `drsm` classification task to [embeddings-benchmark/mteb](https://github.com/embeddings-benchmark/mteb) ([#591](https://github.com/embeddings-benchmark/mteb/issues/591)) — verified it against a real model (e5-small 0.598 vs random baseline 0.199), passing the framework's auto-parametrized test grid; PR is open and mergeable. _(Original six-cycle status preserved below.)_ Six contribution cycles across three languages (TypeScript, Python, Rust) and five projects — **6 PRs merged**, **2 in review** (git-cliff #1583, #1584 — complete and green, awaiting @orhun; one-week nudges posted 2026-07-20), and a **new draft PR** ([pudl #5431](https://github.com/catalyst-cooperative/pudl/pull/5431), Cycle 6). **Cycle 6 opened 2026-07-24:** integrating EIA-923 fuel-stocks data into [catalyst-cooperative/pudl](https://github.com/catalyst-cooperative/pudl) ([#5081](https://github.com/catalyst-cooperative/pudl/issues/5081)) — materialized the raw table, root-caused a missing-`report_year` gap in the extractor, and opened a draft PR (`bccefcb9`, extract fix + transform + test, 32 tests green) at the issue's design-feedback checkpoint. **Cycle 3 closed 2026-07-19:** pyfixest [#1385](https://github.com/py-econometrics/pyfixest/pull/1385) merged (`ba1fdbd5`), auto-closing [#829](https://github.com/py-econometrics/pyfixest/issues/829) — @s3alfisc finalized the CI wiring himself and adjusted the final commit in direct response to a coverage-carryforward point I raised. **Cycle 4 closed 2026-07-17:** both halves of the MiniMax integration are in open-chat-studio's `main` — chat [#3800](https://github.com/dimagi/open-chat-studio/pull/3800) (`9722eada`) and voice [#3801](https://github.com/dimagi/open-chat-studio/pull/3801) (`aac1f5c9`) — with issue [#2979](https://github.com/dimagi/open-chat-studio/issues/2979) auto-closed. The 2 still open are the git-cliff PRs (#1583, #1584), awaiting @orhun's review. Per-contribution status is in the table below; full per-cycle write-ups (Phase I–IV) follow, and the most recent maintainer exchanges are summarized under [Recent Maintainer Updates](#recent-maintainer-updates-2026-07-17).
 
 ## Contributions at a Glance
 
@@ -18,6 +18,7 @@
 | 5 | [#412 — Add flags and options to support user-defined templates](https://github.com/orhun/git-cliff/issues/412) | [orhun/git-cliff](https://github.com/orhun/git-cliff) (Rust) | [PR #1583](https://github.com/orhun/git-cliff/pull/1583) — `--templates-dir <PATH>` + `GIT_CLIFF_TEMPLATES_DIR`, `--list-templates`, user templates override built-ins | 🔄 **In review** — opened 2026-07-13; TDD (10 tests), workspace `cargo test`/`clippy`/`fmt` green. All CI tests pass; the one red check is a transient Codecov-upload infra failure (noted on the PR) |
 | 5b | [#1182 — Support searching in `.config` folder](https://github.com/orhun/git-cliff/issues/1182) | [orhun/git-cliff](https://github.com/orhun/git-cliff) (Rust) | `.config` discovery already upstream ([#1448](https://github.com/orhun/git-cliff/pull/1448)); [PR #1584](https://github.com/orhun/git-cliff/pull/1584) — clap `--config` → `Option` cleanup (@orhun-requested follow-up) | 🔄 **In review** — verified #1448 covers discovery; @orhun asked for the residual clap-`Option` cleanup → PR #1584 opened 2026-07-13 (behavior-preserving) |
 | 6 | [#5081 — Integrate EIA 923 Stocks Data](https://github.com/catalyst-cooperative/pudl/issues/5081) | [catalyst-cooperative/pudl](https://github.com/catalyst-cooperative/pudl) (Python) | [Draft PR #5431](https://github.com/catalyst-cooperative/pudl/pull/5431) — inject `report_year` in the stocks extract + `_core_eia923__yearly_fuel_stocks` transform (wide monthly coal/oil/petcoke → tall monthly records) + unit test | 📝 **Draft (in review)** — opened 2026-07-24 at the issue's 🛑 design-feedback checkpoint; materialized the raw table, root-caused a missing-`report_year` gap, verified 17,772-row transform + 32 tests green / ruff clean. Asks 2 design questions; metadata/DBT/migration to follow |
+| 7 | [#591 — Add SciRepEval](https://github.com/embeddings-benchmark/mteb/issues/591) | [embeddings-benchmark/mteb](https://github.com/embeddings-benchmark/mteb) (Python) | [PR #5026](https://github.com/embeddings-benchmark/mteb/pull/5026) — `SciRepEvalDRSMClassification` task (single-label 5-class scientific-paper classification) with metadata, stratified split, and generated descriptive stats | 🔄 **In review** — opened 2026-07-25 (`Part of #591`); scoped to one representative task; verified vs a real model (e5-small 0.598 > random 0.199), auto-parametrized test grid passes, ruff clean; OPEN + MERGEABLE |
 
 ## Contents
 
@@ -39,6 +40,7 @@ Each cycle below follows the same Phase I–IV structure (Issue Selection → Re
 | **[4](#cycle-4)** | open-chat-studio #2979 | chatbot platform (Python/Django) | ✅ 2 merged |
 | **[5](#cycle-5)** | git-cliff #412 / #1182 | changelog CLI (Rust) | 🔄 2 in review |
 | **[6](#cycle-6)** | pudl #5081 | energy-data pipeline (Python) | 📝 draft PR (in review) |
+| **[7](#cycle-7)** | mteb #591 | embeddings benchmark (Python) | 🔄 PR in review |
 
 - [Learnings & Reflections](#learnings--reflections) · [Resources Used](#resources-used) · [AI Tool Usage Log](#ai-tool-usage-log)
 
@@ -93,6 +95,7 @@ Every cycle's Phase II plan follows the **UMPIRE** framework (Understand → Mat
 | **4 — OCS #2979** | Feature, not a bug: verified MiniMax's **actual** API shapes first (chat = OpenAI-compatible `/v1`; voice T2A = custom `/v1/t2a_v2` with a `GroupId` query param + Bearer) before wiring anything | Chat → groq/perplexity via `OpenAIGenericService`; voice → ElevenLabs (direct-return) + Intron (custom-HTTP seeding) — three concrete in-repo analogs | `service_providers/models.py`, `forms.py`, `llm_service/*`, `speech_service.py`, `default_models.py`, migrations, `credentials.py`, `reconcile_models.py` | `git log` later dated `d34e0fd08` ("Freeze time in cost tracking panel tests") as the fix my stale branch lacked — root-causing a CI failure to a *stale base*, not my code · edge cases: T2A `GroupId`, `export.yml` schema drift, `TEAM_SCOPED_SERVICES` list · mocked tests (70 chat / 41 voice) |
 | **5 — git-cliff #412 / #1182** | **#1182: used `git log -S 'CONFIG_FILES'` / `--oneline` to date `.config` discovery to PR #1448 (merged 2026-04-20) — the "bug" was already fixed upstream**, so I did not duplicate it; #412: confirmed no `--templates-dir` / `--list-templates` surface exists yet | #412 → the `BuiltinConfig` + `examples/*.toml` RustEmbed built-in-template pattern the codebase already uses for `--init` | `git-cliff-core/src/embed.rs`; `git-cliff/src/{args,lib,main}.rs`; docs | Behavioral test proved `.config/cliff.toml` discovery end-to-end before any code · edge cases designed up front: missing/not-a-dir `--templates-dir` = hard error, non-`.toml` ignored, works outside a git repo, explicit `--config` vs discovery · 10 TDD tests + 8 behavioral scenarios |
 | **6 — pudl #5081** | Materialized the raw `raw_eia923__stocks` asset and found it has **no `report_year`** — root-caused to the eia923 extractor only *fixing* an existing year, never *injecting* one (unlike eia176/eia860m), so the year-less stocks page loses its year on concat | The recent `_core_eia923__yearly_byproduct_disposition` transform (+ blocking `@asset_check`) for structure; the issue-prescribed, already-tested `_yearly_to_monthly_records()` helper for the wide→tall reshape | `src/pudl/extract/eia923.py` (inject year); `src/pudl/transform/eia923.py` (new `_core_eia923__yearly_fuel_stocks`); `tests/unit/transform/eia923_test.py` | Verified the fix by re-materializing (year now 2001–2026) and running the transform on the full table (17,772 rows) before writing it into the module · caught stale issue docs (mamba/`--dataset`) vs current pixi CLI · used the repo's reshape helper instead of a hand-rolled melt (right schema) · 32 unit tests green, ruff clean |
+| **7 — mteb #591** | Not a bug — a scoping + data-provenance task: a multi-task benchmark suite reduced to one clean unit (`drsm`, single-label 5-class), with the real decision being how to build a train/test split from SciRepEval's single `evaluation` split | A recently-merged "add a task" PR (#4988) + `arxiv_classification.py` for the task-class shape; existing single-split tasks (`multilingual_sentiment_classification.py`) for the split precedent | `mteb/tasks/classification/eng/scirepeval_drsm_classification.py` (task); `.../eng/__init__.py` (register); `mteb/descriptive_stats/Classification/SciRepEvalDRSMClassification.json` | Proved correctness by running the task under two models (random 0.199 ≈ chance vs e5-small 0.598) rather than trusting an import · fact-checked provenance: corrected the venue (EMNLP-not-ACL) and used `"not specified"` for the unverifiable license · framework auto-parametrizes the new task into the test grid (the "new test") · ruff clean |
 
 ---
 
@@ -1176,6 +1179,125 @@ schema suggested a simple reshape; **running** the raw asset surfaced the missin
 reframes the whole task. Pairing that with the repo's own reshape helper and its draft-PR checkpoint
 turned a "good first issue" into a genuinely substantive contribution — and one where the first
 outward step is a good design question, not code written on an assumption.
+
+---
+
+# Cycle 7
+
+## Cycle 7 — Project
+
+**Project:** [embeddings-benchmark/mteb](https://github.com/embeddings-benchmark/mteb) (Python)
+**My fork:** https://github.com/lazizbekravshanov/mteb
+
+MTEB (the Massive Text Embedding Benchmark) is the standard leaderboard for evaluating text-embedding
+models across dozens of tasks. Contributors add new evaluation *tasks* — each a small class that
+points at a dataset and declares how to score it — which then run against every model on the board.
+
+## Cycle 7 — Phase I: Issue Selection
+
+### Issue
+
+[embeddings-benchmark/mteb #591 — Add SciRepEval](https://github.com/embeddings-benchmark/mteb/issues/591).
+Labels: `good first issue`, `help wanted`, `new dataset`. SciRepEval is a multi-task benchmark of
+scientific-document tasks; the issue asks to bring it into MTEB.
+
+### Why I Chose This Issue
+
+- **Skill match + AI-track continuity:** it's Python + ML evaluation, continuing the AI/ML lane from
+  Cycle 4 (the MiniMax provider work) while learning a new benchmark framework.
+- **Learning goal:** learn how MTEB structures an evaluation task (abstract task classes, dataset
+  metadata, descriptive statistics) and how HuggingFace datasets are wired into a benchmark.
+- **Strategy — a fast-merging, genuinely-open target:** MTEB merges external "add a task" PRs
+  routinely and often same-day, which directly addresses the slow-review pain of earlier cycles. And
+  #591 was verified genuinely available (below), not one of the many mteb `new dataset` issues that
+  are quietly reserved by a coordinated effort.
+
+### Definition of Done
+
+A new SciRepEval task, correctly wired and validated, merged into MTEB. Because SciRepEval is a
+*multi-task* suite, the first PR is scoped to **one representative task** (`drsm`), with follow-up
+subtasks to come — so this PR is `Part of #591`, not the completing one.
+
+### Phase I Outcome
+
+Verified claimability thoroughly (checklist rule #1): #591 is open, unassigned, **zero comments**, no
+linked PR. The one cross-reference is a *duplicate* issue closed as such — no work product. Crucially,
+I checked the "MOEB" umbrella coordination effort ([#4842](https://github.com/embeddings-benchmark/mteb/issues/4842))
+that reserves many `new dataset` issues, and confirmed its matrix is **cross-modal only** (audio/image/
+video) — SciRepEval is pure text and appears nowhere in it. Genuinely available.
+
+## Cycle 7 — Phase II: Reproduce and Plan
+
+### Environment Setup (2026-07-25)
+
+- Forked to `lazizbekravshanov/mteb`, cloned to `~/pet/mteb`, added `upstream`.
+- Installed with the repo's documented flow (`uv sync --group dev`); confirmed `import mteb` (2.18.6),
+  and that the task registry + the CPU test model (`mteb/baseline-random-encoder`) load. No GPU needed.
+
+### Match — the in-repo pattern
+
+Rather than invent structure, I mirrored a **recently merged** "add a task" PR (#4988) and an existing
+task class (`arxiv_classification.py`): subclass `AbsTaskClassification`, fill a `TaskMetadata(...)`
+block, register the class in the module `__init__` (explicit import + `__all__`), and generate a
+descriptive-statistics JSON. For the single-split-into-train/test problem (below), I mirrored existing
+single-split classification tasks (`multilingual_sentiment_classification.py`, `multi_hate_classification.py`).
+
+### Plan + the key design decision
+
+SciRepEval has ~20 HuggingFace configs. I scoped the first PR to **`drsm`** (Disease Research State
+Model) — a clean **single-label 5-class** paper classification (~8.8k rows), a 1:1 fit for
+`AbsTaskClassification`. The others were deliberately not chosen for PR #1: `fos`/`mesh_descriptors`
+are multi-label (need a different abstract class). The one real implementation decision: `drsm` ships
+only a single `evaluation` split, but MTEB classification fits a probe on train and scores on test —
+so the transform must **create a stratified train/test split** from that single split.
+
+## Cycle 7 — Phase III: Build (2026-07-25)
+
+Branch `issue-591-scirepeval-drsm`, commit **`c9e8ca55`** (3 files, +152 lines):
+
+1. `mteb/tasks/classification/eng/scirepeval_drsm_classification.py` — `SciRepEvalDRSMClassification`;
+   `dataset_transform()` concatenates title+abstract → `text`, encodes the label, and builds a
+   stratified 70/30 train/test split (test subsampled to 2048, per the docs).
+2. `mteb/tasks/classification/eng/__init__.py` — register the task (import + `__all__`).
+3. `mteb/descriptive_stats/Classification/SciRepEvalDRSMClassification.json` — generated stats.
+
+**Verification (evidence before assertions):**
+- **Ran the task with two models** to prove it's wired correctly, not just importable: the random
+  baseline scores **0.199** accuracy (≈ chance for 5 classes), while `intfloat/multilingual-e5-small`
+  scores **0.598** — clearly above random (~3×) and not suspiciously near-perfect.
+- `pytest tests/test_tasks/test_metadata.py -k SciRepEval` and `test_dataset_on_hf.py` (pinned
+  revision) → **pass**. MTEB auto-parametrizes every registered task into these grids, so *registering
+  the task is the new test* (no bespoke test file needed — this is the rubric's "new test").
+- `ruff check` / `ruff format` → clean.
+
+### Challenges Faced (Cycle 7)
+
+- **The single-split problem** was the real engineering call — building a reproducible stratified
+  train/test split from `drsm`'s one `evaluation` split, following in-repo precedent rather than
+  inventing a scheme.
+- **Metadata honesty (checklist: fact-check against source).** The issue's note said the paper was
+  "ACL 2023"; the paper is actually **EMNLP 2023** — corrected the citation. The `allenai/scirepeval`
+  HF card declares **no license**, so I used the repo's standard `"not specified"` rather than assert
+  ODC-BY I couldn't verify, and flagged the approximate date range for the reviewer. Getting these
+  right (and admitting the uncertain ones) is what earns a maintainer's trust.
+
+## Cycle 7 — Phase IV: Submit and Iterate
+
+**PR opened:** [embeddings-benchmark/mteb #5026](https://github.com/embeddings-benchmark/mteb/pull/5026)
+— "Add SciRepEval `drsm` classification task". Non-draft, **OPEN and MERGEABLE**, base `main`,
+`Part of #591`. The body is why-before-what with an acceptance checklist and the baseline-vs-model
+score evidence. A brief [claim/intro comment](https://github.com/embeddings-benchmark/mteb/issues/591#issuecomment-5079350301)
+was posted on #591 first (Phase-I intro), stating the single-task scope and follow-ups to come.
+
+**Status:** in review. MTEB merges external "add a task" PRs quickly, so this is the most likely next
+merge. Follow-up SciRepEval subtasks (`biomimicry`, `fos`, the `scidocs_*` sets) would come as separate
+PRs, and the one that completes the suite carries `Closes #591`.
+
+**Learnings (Cycle 7):** *scope a multi-task issue down to one clean unit, and prove it works with a
+real model, not just a passing import.* Running `drsm` under both the random baseline and e5-small —
+and seeing the expected ~3× lift — was the difference between "it imports" and "it's correct." And the
+metadata fact-checking (EMNLP-not-ACL, unverified-license → "not specified") is a reminder that on a
+data contribution, the *provenance details* are part of the correctness.
 
 ---
 

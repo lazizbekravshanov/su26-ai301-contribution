@@ -7,7 +7,7 @@ matters most — **how it helped the people who use and maintain these projects.
 The formal phase-by-phase write-ups are in [README.md](README.md); this is the version that
 explains the actual engineering and its impact.
 
-**Summary:** 6 pull requests merged, 2 in review, and 1 new draft — across five projects and three languages
+**Summary:** 6 pull requests merged, 3 in review, and 1 draft — across six projects and three languages
 (TypeScript, Python, Rust).
 
 ---
@@ -277,6 +277,47 @@ draft with a design question, exactly at the checkpoint their own issue prescrib
 **Outcome.** [Draft PR #5431](https://github.com/catalyst-cooperative/pudl/pull/5431) — the extract
 fix + transform + test, opened at the issue's feedback checkpoint with two design questions for the
 maintainers; the remaining integration (metadata, validation tests, migration) follows their answer.
+
+---
+
+## Cycle 7 — mteb #591: teach a benchmark a new scientific-paper task
+
+**Project.** [embeddings-benchmark/mteb](https://github.com/embeddings-benchmark/mteb) — the standard
+leaderboard (MTEB) for comparing text-embedding models. Contributors add *tasks*: small classes that
+point at a dataset and say how to score it, which then run against every model on the board.
+
+**The specific problem ([#591](https://github.com/embeddings-benchmark/mteb/issues/591)).** Add
+SciRepEval — a benchmark of scientific-document tasks — to MTEB. Since it's a *suite* of tasks, I
+scoped the first contribution to one clean, representative task.
+
+**The exact part of the software.** MTEB's task registry: a new task class under
+`mteb/tasks/classification/`, its registration in the module `__init__`, and a generated
+descriptive-statistics file.
+
+**What I actually did (concretely).**
+- **Scoped a sprawling issue down to one clean unit.** SciRepEval has ~20 dataset configs; I picked
+  **`drsm`** (Disease Research State Model) — a single-label, 5-class paper-classification set (~8.8k
+  rows) that maps 1:1 onto MTEB's classification task, and deliberately *avoided* the multi-label
+  configs that would need a different base class.
+- **Solved the one real design decision.** `drsm` ships only a single evaluation split, but MTEB
+  classification trains a probe on one split and scores on another — so the transform builds a
+  **stratified train/test split** from that single split, following existing tasks that do the same.
+- **Proved it works with a real model, not just an import.** The random baseline scored **0.199**
+  (≈ chance for 5 classes); the real e5-small model scored **0.598** — about 3× better, and not
+  suspiciously perfect. That gap is what tells you the task is wired correctly. The framework then
+  auto-runs the new task through its existing metadata/dataset test grid.
+- **Fact-checked the provenance.** The issue said the paper was "ACL 2023" — it's actually **EMNLP
+  2023**, so I corrected the citation; and because the dataset's license isn't machine-readable, I
+  used `"not specified"` rather than asserting one I couldn't verify.
+
+**How this helped the community.** MTEB is used by researchers and companies to choose embedding
+models; every task added makes the leaderboard a more complete, honest picture of what models can do.
+This one adds a *scientific-document* classification signal that wasn't there. And the care with the
+metadata — correct venue, honest license — means the task is trustworthy, not just present.
+
+**Outcome.** [PR #5026](https://github.com/embeddings-benchmark/mteb/pull/5026) — open, mergeable,
+`Part of #591`, with follow-up SciRepEval subtasks to come. MTEB merges "add a task" PRs quickly, so
+this is the likely next merge.
 
 ---
 

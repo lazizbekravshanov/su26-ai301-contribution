@@ -1221,8 +1221,9 @@ scientific-document tasks; the issue asks to bring it into MTEB.
 ### Definition of Done
 
 A new SciRepEval task, correctly wired and validated, merged into MTEB. Because SciRepEval is a
-*multi-task* suite, the first PR is scoped to **one representative task** (`drsm`), with follow-up
-subtasks to come — so this PR is `Part of #591`, not the completing one.
+*multi-task* suite, the first PR was scoped to **one representative task** (`drsm`) — then, during
+review, the maintainer asked to fold in the rest of the classification family, so the PR grew to
+**four** tasks (see Phase III/IV). It remains `Part of #591`, not the completing one.
 
 ### Phase I Outcome
 
@@ -1240,70 +1241,124 @@ video) — SciRepEval is pure text and appears nowhere in it. Genuinely availabl
 - Installed with the repo's documented flow (`uv sync --group dev`); confirmed `import mteb` (2.18.6),
   and that the task registry + the CPU test model (`mteb/baseline-random-encoder`) load. No GPU needed.
 
-### Match — the in-repo pattern
+### Solution Plan (UMPIRE)
 
-Rather than invent structure, I mirrored a **recently merged** "add a task" PR (#4988) and an existing
-task class (`arxiv_classification.py`): subclass `AbsTaskClassification`, fill a `TaskMetadata(...)`
-block, register the class in the module `__init__` (explicit import + `__all__`), and generate a
-descriptive-statistics JSON. For the single-split-into-train/test problem (below), I mirrored existing
-single-split classification tasks (`multilingual_sentiment_classification.py`, `multi_hate_classification.py`).
+**Understand.** SciRepEval is a *multi-task* suite (~20 HuggingFace configs), not a single dataset. The
+task is to bring its classification-type subsets into MTEB as evaluation tasks — each a small class
+that points at a dataset config and declares how it is scored. The one real engineering wrinkle:
+several subsets ship only a single `evaluation` split, but MTEB fits a classification probe on `train`
+and scores on `test`, so the transform must build a reproducible split.
 
-### Plan + the key design decision
+**Match.** Rather than invent structure, I mirrored a **recently merged** "add a task" PR (#4988) and
+existing task classes: `arxiv_classification.py` for the single-label shape (`AbsTaskClassification`),
+`MalteseNewsClassification` for the multi-label shape (`AbsTaskMultilabelClassification`), and existing
+single-split tasks (`multilingual_sentiment_classification.py`) for the stratified-split precedent.
 
-SciRepEval has ~20 HuggingFace configs. I scoped the first PR to **`drsm`** (Disease Research State
-Model) — a clean **single-label 5-class** paper classification (~8.8k rows), a 1:1 fit for
-`AbsTaskClassification`. The others were deliberately not chosen for PR #1: `fos`/`mesh_descriptors`
-are multi-label (need a different abstract class). The one real implementation decision: `drsm` ships
-only a single `evaluation` split, but MTEB classification fits a probe on train and scores on test —
-so the transform must **create a stratified train/test split** from that single split.
+**Plan.** Start with **`drsm`** (Disease Research State Model — a clean single-label 5-class task,
+~8.8k rows) as the first, representative PR (`Part of #591`), with the remaining classification subsets
+to follow. Each task: subclass the right abstract class, fill a `TaskMetadata(...)` block, register it
+in the module `__init__` (explicit import + `__all__`), and generate a descriptive-statistics JSON.
 
-## Cycle 7 — Phase III: Build (2026-07-25)
+**Implement.** `dataset_transform()` concatenates title+abstract → `text`, encodes the label, and (for
+single-split subsets) builds a stratified train/test split — details in Phase III.
 
-Branch `issue-591-scirepeval-drsm`, commit **`c9e8ca55`** (3 files, +152 lines):
+**Review.** Match the repo's conventions exactly (task-class shape, registration, stats JSON) and
+fact-check every metadata field (license, annotations, venue) against source rather than guessing.
 
-1. `mteb/tasks/classification/eng/scirepeval_drsm_classification.py` — `SciRepEvalDRSMClassification`;
-   `dataset_transform()` concatenates title+abstract → `text`, encodes the label, and builds a
-   stratified 70/30 train/test split (test subsampled to 2048, per the docs).
-2. `mteb/tasks/classification/eng/__init__.py` — register the task (import + `__all__`).
-3. `mteb/descriptive_stats/Classification/SciRepEvalDRSMClassification.json` — generated stats.
+**Evaluate.** The acceptance bar set here: *every task must beat a random-encoder baseline when run
+under a real embedding model* — proof it measures signal, not that it merely imports — and the
+framework's auto-parametrized test grid must stay green.
 
-**Verification (evidence before assertions):**
-- **Ran the task with two models** to prove it's wired correctly, not just importable: the random
-  baseline scores **0.199** accuracy (≈ chance for 5 classes), while `intfloat/multilingual-e5-small`
-  scores **0.598** — clearly above random (~3×) and not suspiciously near-perfect.
-- `pytest tests/test_tasks/test_metadata.py -k SciRepEval` and `test_dataset_on_hf.py` (pinned
-  revision) → **pass**. MTEB auto-parametrizes every registered task into these grids, so *registering
-  the task is the new test* (no bespoke test file needed — this is the rubric's "new test").
-- `ruff check` / `ruff format` → clean.
+## Cycle 7 — Phase III: Build (2026-07-25 → 07-26)
+
+Built in three tracked stages on branch `issue-591-scirepeval-drsm`:
+
+**1. Initial task — `drsm`** (`c9e8ca55`): `SciRepEvalDRSMClassification` + module registration
+(import + `__all__`) + a generated descriptive-stats JSON. `dataset_transform()` concatenates
+title+abstract → `text`, encodes the label, and builds a stratified 70/30 split (test subsampled to
+2048, per the docs).
+
+**2. Expansion to four tasks** (`5b95c7c7`) — at maintainer **@Samoed**'s request (he noted biomimicry
+is *also* classification and asked to "integrate it in the same PR"), I added the remaining
+classification-type SciRepEval subsets:
+
+| Task | Class | Notes |
+|---|---|---|
+| `SciRepEvalDRSMClassification` | `AbsTaskClassification` | single-label, 5-class |
+| `SciRepEvalBiomimicryClassification` | `AbsTaskClassification` | binary relevance |
+| `SciRepEvalFoSClassification` | `AbsTaskMultilabelClassification` | multi-label MAG fields of study |
+| `SciRepEvalMeSHDescriptorsClassification` | `AbsTaskClassification` | 30-class MeSH descriptors |
+
+The retrieval/proximity and regression SciRepEval configs were deliberately **excluded** (they belong
+under `tasks/retrieval/`, not classification) — and I said so explicitly to the maintainer rather than
+dropping them silently. Diff at this stage: 10 files, +861 lines (4 task modules, 2 `__init__.py`,
+4 stats JSONs).
+
+**3. CI fixes + review feedback** (`c22bd5be`, then `4bd90d9b`): two CI failures the task-filtered
+local run missed, then the lead maintainer's notes (below).
+
+**Verification (evidence before assertions) — each task run under a random baseline vs a real model
+(`intfloat/multilingual-e5-small`):**
+
+| Task | random ≈ chance | e5-small | verdict |
+|---|---|---|---|
+| DRSM (5-class) | 0.199 | 0.598 | ✓ ≫ chance |
+| Biomimicry (binary) | 0.510 | 0.728 | ✓ |
+| FoS (multi-label) | 0.001 | 0.178 | ✓ |
+| MeSH (30-class) | 0.033 | 0.582 | ✓ |
+
+- `pytest tests/test_tasks/test_metadata.py -k SciRepEval` → **4 pass**; `test_dataset_on_hf.py` (pinned
+  revisions) → pass; `_task_quality` → **0 errors** on all four. MTEB auto-parametrizes every registered
+  task into these grids, so *registering the task is the new test* (the rubric's "new test").
+- `make lint-check` (ruff format + ruff check + typos) → clean.
 
 ### Challenges Faced (Cycle 7)
 
-- **The single-split problem** was the real engineering call — building a reproducible stratified
-  train/test split from `drsm`'s one `evaluation` split, following in-repo precedent rather than
-  inventing a scheme.
-- **Metadata honesty (checklist: fact-check against source).** The issue's note said the paper was
-  "ACL 2023"; the paper is actually **EMNLP 2023** — corrected the citation. The `allenai/scirepeval`
-  HF card declares **no license**, so I used the repo's standard `"not specified"` rather than assert
-  ODC-BY I couldn't verify, and flagged the approximate date range for the reviewer. Getting these
-  right (and admitting the uncertain ones) is what earns a maintainer's trust.
+- **The single-split problem** was the first real engineering call — building a reproducible stratified
+  train/test split from a single `evaluation` split, following in-repo precedent rather than inventing
+  a scheme.
+- **Two CI failures the `-k SciRepEval` slice didn't surface.** The repo-wide `test_dataset_quality`
+  caught a duplicate title+abstract in the DRSM split (fixed by deduplicating before the split, so no
+  document leaks across train/test), and `typos` flagged the legitimate **`FoS`** acronym (fixed via
+  the repo's identifier allowlist, matching how it already whitelists intentional task-name tokens).
+  Lesson: run the *repo-wide* quality/lint gate, not just the task-filtered slice.
+- **Metadata honesty, then resolution (fact-check against source).** The issue said "ACL 2023"; the
+  paper is **EMNLP 2023** — corrected. I initially used `"not specified"` for the license rather than
+  assert one I hadn't verified — then, on the lead maintainer's prompt, found the SciRepEval README
+  explicitly releases the benchmark under **ODC-BY** and set `license="odc-by"` on all four (the HF card
+  is empty, which is where the gap came from). Biomimicry's `annotations_creators` was corrected to
+  `human-annotated` (NASA PeTaL relevance tags, per the paper). *Admitting the uncertain metadata first,
+  then sourcing it properly, is what earns a maintainer's trust.*
 
 ## Cycle 7 — Phase IV: Submit and Iterate
 
-**PR opened:** [embeddings-benchmark/mteb #5026](https://github.com/embeddings-benchmark/mteb/pull/5026)
-— "Add SciRepEval `drsm` classification task". Non-draft, **OPEN and MERGEABLE**, base `main`,
-`Part of #591`. The body is why-before-what with an acceptance checklist and the baseline-vs-model
-score evidence. A brief [claim/intro comment](https://github.com/embeddings-benchmark/mteb/issues/591#issuecomment-5079350301)
-was posted on #591 first (Phase-I intro), stating the single-task scope and follow-ups to come.
+**PR:** [embeddings-benchmark/mteb #5026](https://github.com/embeddings-benchmark/mteb/pull/5026) —
+"Add SciRepEval classification tasks (DRSM, biomimicry, FoS, MeSH)". Non-draft, **OPEN and MERGEABLE**,
+base `main`, `Part of #591`. The body is why-before-what with an acceptance checklist and the
+baseline-vs-model score evidence. A brief [claim/intro comment](https://github.com/embeddings-benchmark/mteb/issues/591#issuecomment-5079350301)
+was posted on #591 first (Phase-I intro).
 
-**Status:** in review. MTEB merges external "add a task" PRs quickly, so this is the most likely next
-merge. Follow-up SciRepEval subtasks (`biomimicry`, `fos`, the `scidocs_*` sets) would come as separate
-PRs, and the one that completes the suite carries `Closes #591`.
+**Review rounds (the full OSS loop):**
+- **@Samoed** asked why the PR covered only the `drsm` config. I explained the initial scoping, and
+  when he asked to fold in the other classification subsets, expanded the PR to all four (Phase III).
+- **@KennethEnevoldsen** (lead maintainer) reviewed: *"A few minor comments, but otherwise I think it
+  looks good."* His four inline notes were each addressed or answered with a **sourced** reply:
+  descriptions reframed to his suggested "what it tests → how → attributes" style; `license` set to
+  **odc-by** (SciRepEval README); biomimicry `annotations_creators` → **human-annotated** (PeTaL, per
+  the paper); and the "prefer a pre-formatted HF dataset over an on-the-fly `dataset_transform`"
+  suggestion acknowledged and deferred to @Samoed (who he flagged sometimes handles that step).
 
-**Learnings (Cycle 7):** *scope a multi-task issue down to one clean unit, and prove it works with a
-real model, not just a passing import.* Running `drsm` under both the random baseline and e5-small —
-and seeing the expected ~3× lift — was the difference between "it imports" and "it's correct." And the
-metadata fact-checking (EMNLP-not-ACL, unverified-license → "not specified") is a reminder that on a
-data contribution, the *provenance details* are part of the correctness.
+**Status:** in review, **positively reviewed** by the lead maintainer, addressing the minor notes.
+`make lint-check` and the task quality/metadata grids are green locally; the hosted CI run is gated on
+first-time-contributor workflow approval. The SciRepEval subtask that ultimately completes the suite
+would carry `Closes #591`.
+
+**Learnings (Cycle 7):** *scope a multi-task issue to one clean unit, prove it with a real model — then
+let review widen it.* The PR shipped as **4× what I opened** because a maintainer saw the pattern was
+worth generalizing; the right move was to expand deliberately — and to exclude the non-classification
+configs *out loud* — rather than either over-building up front or resisting the ask. And on a data
+contribution the *provenance details* (license, annotation method, venue) are part of the correctness:
+better to mark a field uncertain and then source it than to guess.
 
 ---
 

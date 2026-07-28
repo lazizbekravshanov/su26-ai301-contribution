@@ -1378,14 +1378,14 @@ better to mark a field uncertain and then source it than to guess.
 
 # Cycle 8
 
-## Cycle 8 — Project
+## Cycle 8, Project
 
 **Project:** [marimo-team/marimo-lsp](https://github.com/marimo-team/marimo-lsp) (TypeScript / Python)
 **My fork:** https://github.com/lazizbekravshanov/marimo-lsp
 
 Back in the repo from Cycle 1 (the marimo VS Code extension and its LSP server), this time to fix how cell error messages identify the failing cell.
 
-## Cycle 8 — Phase I: Issue Selection
+## Cycle 8, Phase I: Issue Selection
 
 ### Issue
 
@@ -1403,7 +1403,7 @@ The exception message, and the sibling ancestor messages, show the cell number l
 
 Verified claimable: #581 open, unassigned, no linked PR (checked the issue timeline). Core maintainer @mscolnick had already confirmed on the issue: "Yes this is something we can fix with a hyperlink."
 
-## Cycle 8 — Phase II: Reproduce and Plan
+## Cycle 8, Phase II: Reproduce and Plan
 
 ### Environment Setup
 
@@ -1432,7 +1432,7 @@ In `extension/src/lib/errors.ts`, `prettyErrorMessage(error, cellIdMapper?)` int
 **Review.** Keep the diff small and preserve the fallback when no mapper is passed, so existing snapshots do not change.
 **Evaluate.** Three tests written failing first, then the full TypeScript suite and typecheck.
 
-## Cycle 8 — Phase III: Build
+## Cycle 8, Phase III: Build
 
 Wrote three tests first (exception plain text, exception HTML link, ancestor stopped), watched them fail (3 failed / 23 passed), then implemented the `cellRef` helper and applied it to the four cases. Tests went green (26 in the file). Full suite `just test-ts`: 491 passed, 1 skipped. The only lint issue is the pre-existing unrelated typecheck error from the version skew described above, confirmed identical on the clean base via `git stash`, so this change adds zero new errors.
 
@@ -1442,7 +1442,7 @@ Before: `(raised in cell: 918d2406-014b-4a20-9c9a-ba8cb7ab2ba2)`. After: `(raise
 
 The main judgment call was scope. The issue names only the exception case, but three sibling messages had the identical raw-UUID defect. Fixing all four keeps the maintainer from seeing one fixed message next to three broken ones. The intro comment flags that this can be trimmed to just the exception case if preferred.
 
-## Cycle 8 — Phase IV: Submit and Iterate
+## Cycle 8, Phase IV: Submit and Iterate
 
 **PR:** [marimo-team/marimo-lsp #643](https://github.com/marimo-team/marimo-lsp/pull/643), "Show cell number and link in error messages instead of the raw cell id (#581)". Non-draft, base main, `Closes #581`. The description is why before what with an acceptance checklist and before/after evidence. A Phase I intro comment was posted on the issue asking @mscolnick to confirm the link surface versus a plain cell number. Commit `c8ad5df1`, one atomic Conventional Commit, no AI attribution.
 
@@ -1454,14 +1454,14 @@ The main judgment call was scope. The issue names only the exception case, but t
 
 # Cycle 9
 
-## Cycle 9 — Project
+## Cycle 9, Project
 
 **Project:** [marimo-team/marimo-lsp](https://github.com/marimo-team/marimo-lsp) (TypeScript / Python)
 **My fork:** https://github.com/lazizbekravshanov/marimo-lsp
 
 A second contribution to the marimo VS Code extension in parallel with Cycle 8, this one a data loss bug in the "Open as notebook" flow.
 
-## Cycle 9 — Phase I: Issue Selection
+## Cycle 9, Phase I: Issue Selection
 
 ### Issue
 
@@ -1479,7 +1479,7 @@ Opening a marimo notebook must never destroy the file's content, proven by an au
 
 Verified claimable: #531 open, unassigned, no linked PR (checked the issue timeline and `gh pr list`).
 
-## Cycle 9 — Phase II: Reproduce and Plan
+## Cycle 9, Phase II: Reproduce and Plan
 
 ### Environment Setup
 
@@ -1509,7 +1509,7 @@ The command `openAsMarimoNotebook` in `extension/src/commands/openAsMarimoNotebo
 **Review.** No behavior change for the clean path; existing tests stay green.
 **Evaluate.** A failing test first that asserts a dirty buffer is saved before the open, plus a guard test that a clean buffer is not saved, then the full suite.
 
-## Cycle 9 — Phase III: Build
+## Cycle 9, Phase III: Build
 
 Wrote the failing test first: a dirty active document must be saved before the open. It failed with the save count at zero, which reproduces the data loss ordering at the unit level. Implemented the minimal fix (save the dirty buffer before opening) and a guard test for the clean path. Command tests: 5 passed (was 3). Full `just test-ts`: 490 passed, 1 skipped. New and changed code is lint clean; the one remaining lint error is the unrelated pre-existing version-skew error. One atomic Conventional Commit `7aa17bb`, no AI attribution.
 
@@ -1517,7 +1517,7 @@ Wrote the failing test first: a dirty active document must be saved before the o
 
 This bug is a GUI ordering problem, so the button-level reproduction cannot be run headlessly. I compensated with a unit test that deterministically exercises the exact vulnerable logic (dirty document to command to save behavior), red before the fix and green after. The design choice was to save the dirty buffer rather than build a truly unsaved notebook, which is the minimal fully data-safe fix; the PR text notes this in case the maintainer prefers a prompt.
 
-## Cycle 9 — Phase IV: Submit and Iterate
+## Cycle 9, Phase IV: Submit and Iterate
 
 **PR:** [marimo-team/marimo-lsp #644](https://github.com/marimo-team/marimo-lsp/pull/644), "Save the unsaved buffer before opening a file as a marimo notebook (#531)". Non-draft, base main, `Closes #531`. Why before what, emphasizing the data loss nature, with before/after evidence and an acceptance checklist. A Phase I intro comment was posted on the issue. Commit `7aa17bb`, no AI attribution.
 
@@ -1531,14 +1531,14 @@ This bug is a GUI ordering problem, so the button-level reproduction cannot be r
 
 # Cycle 10
 
-## Cycle 10 — Project
+## Cycle 10, Project
 
 **Project:** [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python)
 **My fork:** https://github.com/lazizbekravshanov/pyfixest
 
 Back in pyfixest from Cycles 2 and 3, this time in the same `predict` code path that Cycle 2 touched.
 
-## Cycle 10 — Phase I: Issue Selection
+## Cycle 10, Phase I: Issue Selection
 
 ### Issue
 
@@ -1556,7 +1556,7 @@ The reporter asks whether it is intentional that `predict` drops NaNs and single
 
 Verified claimable: #1236 open, unassigned, no linked PR. Investigation verdict: the behavior is intended and matches R `fixest`, proven by the repo's own R parity tests (`tests/test_predict_resid_fixef.py` asserts `len(predict())` matches R fitted values and `len(predict(newdata))` matches R `predict(newdata)`, and `test_predict_nas` compares row for row including NaNs). One real gap remained: unseen fixed effect levels already warn, but a NaN in a right hand side covariate produced a NaN prediction silently.
 
-## Cycle 10 — Phase II: Reproduce and Plan
+## Cycle 10, Phase II: Reproduce and Plan
 
 ### Environment Setup
 
@@ -1586,7 +1586,7 @@ Expected: consistent, discoverable NaN semantics; when a newdata row cannot be p
 **Evaluate.** A failing test first for the new warning, then the regression suite and lint.
 **Alternative offered to the maintainer:** make the newdata branch drop covariate NaN and unseen level rows so it matches the None branch shape. Rejected because the repo's tests assert `len(predict(newdata)) == nrow(newdata)` and R parity, so changing the shape would break the intended contract. A docstring only change is also offered.
 
-## Cycle 10 — Phase III: Build
+## Cycle 10, Phase III: Build
 
 Wrote `tests/test_predict_na_handling.py` first (no rpy2 so it runs in the default env), watched the covariate NaN warning test fail with "DID NOT WARN". Implemented the minimal warning in `get_design_matrix_and_yhat` and updated the `predict` docstring. Tests went green (3 passed). Regression across `tests/test_errors.py`, `tests/test_others.py`, and the new file: 83 passed, 1 skipped. `pixi run lint`: ruff check, ruff format, and mypy all pass. One atomic Conventional Commit `53feeab4`, no AI attribution.
 
@@ -1596,7 +1596,7 @@ Before: `predict(newdata=data)` returned a NaN for the covariate NaN row with no
 
 The hard part was resisting the urge to "fix" something that was not broken. The evidence (the repo's own R parity tests) showed the returned values are correct and intended, so the right contribution was a reporting and documentation improvement, not a behavior change. The change is scoped to a single new warning plus a docstring, and the issue reply asks the maintainer to confirm the semantics before a PR.
 
-## Cycle 10 — Phase IV: Submit and Iterate
+## Cycle 10, Phase IV: Submit and Iterate
 
 Posted an investigation comment on [#1236](https://github.com/py-econometrics/pyfixest/issues/1236) stating the verdict (intended, R matching), describing the one silent gap, and asking @s3alfisc to confirm the direction (add the warning, or docstring only) before a PR. The branch `issue-1236-predict-na-handling` (commit `53feeab4`) is ready to open as a PR the moment the maintainer confirms, and it would be `Part of #1236`, not `Closes`, because it is a reporting and documentation change rather than a behavior change.
 

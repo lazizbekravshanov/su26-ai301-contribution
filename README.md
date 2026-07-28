@@ -4,12 +4,15 @@
 **Program:** CodePath AI301, Summer 2026
 > 🧭 **[Combined Feedback Checklist](FEEDBACK-CHECKLIST.md)**, a running, checklist-format log of every maintainer/reviewer/mentor note across cycles, used as a pre-submission self-review (mentor-suggested habit).
 
-**Status as of 2026-07-28:** Seven contribution cycles across three languages (TypeScript, Python, Rust) and six projects: **6 PRs merged · 4 in review (one a Cycle 4 docs follow-up) · 1 draft.** Full per-contribution status is in the [table below](#contributions-at-a-glance). The live (unmerged) work:
+**Status as of 2026-07-28:** Ten contribution cycles across three languages (TypeScript, Python, Rust) and six projects: **6 PRs merged · 6 in review (one a Cycle 4 docs follow-up) · 1 draft · 1 under investigation.** Full per-contribution status is in the [table below](#contributions-at-a-glance). The live (unmerged) work:
 
 - 🔄 **[mteb #5026](https://github.com/embeddings-benchmark/mteb/pull/5026)** (Cycle 7), SciRepEval classification tasks for [embeddings-benchmark/mteb](https://github.com/embeddings-benchmark/mteb) ([#591](https://github.com/embeddings-benchmark/mteb/issues/591)). Opened 2026-07-25 with the `drsm` task, then **expanded to four** (DRSM, Biomimicry, FoS, MeSH) on 2026-07-26 at maintainer @Samoed's request. CI green; lead maintainer @KennethEnevoldsen reviewed it *"looks good, a few minor comments"*, addressing those now.
 - 🔄 **[git-cliff #1583](https://github.com/orhun/git-cliff/pull/1583) / [#1584](https://github.com/orhun/git-cliff/pull/1584)** (Cycle 5), user-defined templates (`--templates-dir`) + `.config` discovery cleanup for [orhun/git-cliff](https://github.com/orhun/git-cliff) (Rust). Complete and green; awaiting @orhun's review (follow-up nudges posted 2026-07-20 and 2026-07-27).
 - 🔄 **[open-chat-studio-docs #622](https://github.com/dimagi/open-chat-studio-docs/pull/622)** (Cycle 4 follow-up), user docs and changelog for the merged MiniMax LLM and voice providers, opened 2026-07-27 after maintainer @lisa-tarbo asked for them. Approved by @lisa-tarbo ("looks good to me"), awaiting @snopoke to merge.
 - 📝 **[pudl #5431](https://github.com/catalyst-cooperative/pudl/pull/5431)** (Cycle 6), EIA-923 fuel-stocks integration for [catalyst-cooperative/pudl](https://github.com/catalyst-cooperative/pudl) ([#5081](https://github.com/catalyst-cooperative/pudl/issues/5081)) (Python). Draft opened 2026-07-24 at the issue's design-feedback checkpoint: raw table materialized, a missing-`report_year` gap root-caused, extract fix + transform + test in place (`bccefcb9`, 32 tests green). Follow-up nudge posted 2026-07-27.
+- 🔄 **[marimo-lsp #643](https://github.com/marimo-team/marimo-lsp/pull/643)** (Cycle 8), show the cell number and a clickable link in cell error messages instead of the raw UUID ([#581](https://github.com/marimo-team/marimo-lsp/issues/581)). Opened 2026-07-28, maintainer @mscolnick had confirmed the hyperlink approach; TDD, full TS suite green.
+- 🔄 **[marimo-lsp #644](https://github.com/marimo-team/marimo-lsp/pull/644)** (Cycle 9), save the dirty buffer before opening a file as a notebook so unsaved content is never destroyed ([#531](https://github.com/marimo-team/marimo-lsp/issues/531)). Opened 2026-07-28, a data-loss fix, red-first unit test plus a manual GUI confirmation.
+- 🔍 **[pyfixest #1236](https://github.com/py-econometrics/pyfixest/issues/1236)** (Cycle 10), predict NA handling. Investigation found the behavior is intended and matches R fixest; posted a comment adding one small warning for a silently dropped covariate NaN and asked @s3alfisc to confirm the direction before opening the PR (branch ready).
 
 **Recently merged:** Cycle 1 marimo-lsp [#603](https://github.com/marimo-team/marimo-lsp/pull/603) (closed #154) · Cycle 2 pyfixest [#1368](https://github.com/py-econometrics/pyfixest/pull/1368) + [#1369](https://github.com/py-econometrics/pyfixest/pull/1369) · Cycle 3 pyfixest [#1385](https://github.com/py-econometrics/pyfixest/pull/1385) (closed #829) · Cycle 4 open-chat-studio [#3800](https://github.com/dimagi/open-chat-studio/pull/3800) + [#3801](https://github.com/dimagi/open-chat-studio/pull/3801) (closed #2979). Details in the table and per-cycle write-ups below; recent maintainer exchanges are under [Recent Maintainer Updates](#recent-maintainer-updates-2026-07-17).
 
@@ -26,6 +29,9 @@
 | 5b | [#1182: Support searching in `.config` folder](https://github.com/orhun/git-cliff/issues/1182) | [orhun/git-cliff](https://github.com/orhun/git-cliff) (Rust) | `.config` discovery already upstream ([#1448](https://github.com/orhun/git-cliff/pull/1448)); [PR #1584](https://github.com/orhun/git-cliff/pull/1584), clap `--config` → `Option` cleanup (@orhun-requested follow-up) | 🔄 **In review**, verified #1448 covers discovery; @orhun asked for the residual clap-`Option` cleanup → PR #1584 opened 2026-07-13 (behavior-preserving) |
 | 6 | [#5081: Integrate EIA 923 Stocks Data](https://github.com/catalyst-cooperative/pudl/issues/5081) | [catalyst-cooperative/pudl](https://github.com/catalyst-cooperative/pudl) (Python) | [Draft PR #5431](https://github.com/catalyst-cooperative/pudl/pull/5431), inject `report_year` in the stocks extract + `_core_eia923__yearly_fuel_stocks` transform (wide monthly coal/oil/petcoke → tall monthly records) + unit test | 📝 **Draft (in review)**, opened 2026-07-24 at the issue's 🛑 design-feedback checkpoint; materialized the raw table, root-caused a missing-`report_year` gap, verified 17,772-row transform + 32 tests green / ruff clean. Asks 2 design questions; metadata/DBT/migration to follow |
 | 7 | [#591: Add SciRepEval](https://github.com/embeddings-benchmark/mteb/issues/591) | [embeddings-benchmark/mteb](https://github.com/embeddings-benchmark/mteb) (Python) | [PR #5026](https://github.com/embeddings-benchmark/mteb/pull/5026), four SciRepEval classification tasks (DRSM 5-class, Biomimicry binary, FoS multi-label, MeSH 30-class) with metadata, stratified splits, and generated descriptive stats | 🔄 **In review**, opened 2026-07-25 with `drsm` (`Part of #591`), expanded to four tasks 2026-07-26 at @Samoed's request; each verified vs a real model (e5-small > random baseline), auto-parametrized test grid passes, CI green; lead maintainer @KennethEnevoldsen: *"looks good, a few minor comments"*, addressing them |
+| 8 | [#581: Unclear cell identifier in error messages](https://github.com/marimo-team/marimo-lsp/issues/581) | [marimo-team/marimo-lsp](https://github.com/marimo-team/marimo-lsp) (TypeScript/Python) | [PR #643](https://github.com/marimo-team/marimo-lsp/pull/643), map the raising cell id to the cell number plus a clickable link in error messages, instead of the raw UUID | 🔄 **In review**, opened 2026-07-28 (`Closes #581`); maintainer @mscolnick had confirmed the hyperlink approach; TDD (3 tests), full TS suite 491 passed, no new lint errors |
+| 9 | [#531: Open unsaved file as Marimo notebook deletes it](https://github.com/marimo-team/marimo-lsp/issues/531) | [marimo-team/marimo-lsp](https://github.com/marimo-team/marimo-lsp) (TypeScript/Python) | [PR #644](https://github.com/marimo-team/marimo-lsp/pull/644), save the dirty buffer before opening a file as a notebook so unsaved content is never destroyed | 🔄 **In review**, opened 2026-07-28 (`Closes #531`); data-loss fix, TDD (red-first unit test) + manual GUI confirmation done, full TS suite 490 passed |
+| 10 | [#1236: NA handling for predict and predict with new data](https://github.com/py-econometrics/pyfixest/issues/1236) | [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python) | Warn on silent covariate-NaN predictions + document both `predict` branches (branch `issue-1236-predict-na-handling`, `53feeab4`) | 🔍 **Investigating**, verdict is intended R-matching behavior; investigation comment posted, PR held pending @s3alfisc confirming direction |
 
 ## Contents
 
@@ -48,6 +54,9 @@ Each cycle below follows the same Phase I to IV structure (Issue Selection → R
 | **[5](#cycle-5)** | git-cliff #412 / #1182 | changelog CLI (Rust) | 🔄 2 in review |
 | **[6](#cycle-6)** | pudl #5081 | energy-data pipeline (Python) | 📝 draft PR (in review) |
 | **[7](#cycle-7)** | mteb #591 | embeddings benchmark (Python) | 🔄 PR in review |
+| **[8](#cycle-8)** | marimo-lsp #581 | VS Code extension (TypeScript/Python) | 🔄 PR in review |
+| **[9](#cycle-9)** | marimo-lsp #531 | VS Code extension (TypeScript/Python) | 🔄 PR in review |
+| **[10](#cycle-10)** | pyfixest #1236 | econometrics library (Python) | 🔍 investigating |
 
 - [Learnings & Reflections](#learnings--reflections) · [Resources Used](#resources-used) · [AI Tool Usage Log](#ai-tool-usage-log)
 
@@ -103,6 +112,9 @@ Every cycle's Phase II plan follows the **UMPIRE** framework (Understand → Mat
 | **5, git-cliff #412 / #1182** | **#1182: used `git log -S 'CONFIG_FILES'` / `--oneline` to date `.config` discovery to PR #1448 (merged 2026-04-20), the "bug" was already fixed upstream**, so I did not duplicate it; #412: confirmed no `--templates-dir` / `--list-templates` surface exists yet | #412 → the `BuiltinConfig` + `examples/*.toml` RustEmbed built-in-template pattern the codebase already uses for `--init` | `git-cliff-core/src/embed.rs`; `git-cliff/src/{args,lib,main}.rs`; docs | Behavioral test proved `.config/cliff.toml` discovery end-to-end before any code · edge cases designed up front: missing/not-a-dir `--templates-dir` = hard error, non-`.toml` ignored, works outside a git repo, explicit `--config` vs discovery · 10 TDD tests + 8 behavioral scenarios |
 | **6, pudl #5081** | Materialized the raw `raw_eia923__stocks` asset and found it has **no `report_year`**, root-caused to the eia923 extractor only *fixing* an existing year, never *injecting* one (unlike eia176/eia860m), so the year-less stocks page loses its year on concat | The recent `_core_eia923__yearly_byproduct_disposition` transform (+ blocking `@asset_check`) for structure; the issue-prescribed, already-tested `_yearly_to_monthly_records()` helper for the wide→tall reshape | `src/pudl/extract/eia923.py` (inject year); `src/pudl/transform/eia923.py` (new `_core_eia923__yearly_fuel_stocks`); `tests/unit/transform/eia923_test.py` | Verified the fix by re-materializing (year now 2001 to 2026) and running the transform on the full table (17,772 rows) before writing it into the module · caught stale issue docs (mamba/`--dataset`) vs current pixi CLI · used the repo's reshape helper instead of a hand-rolled melt (right schema) · 32 unit tests green, ruff clean |
 | **7, mteb #591** | Not a bug, a scoping + data-provenance task: a multi-task benchmark suite reduced to one clean unit (`drsm`, single-label 5-class), with the real decision being how to build a train/test split from SciRepEval's single `evaluation` split; later expanded to all four classification-type subsets at @Samoed's request | A recently-merged "add a task" PR (#4988) + `arxiv_classification.py` for the task-class shape; existing single-split tasks (`multilingual_sentiment_classification.py`) for the split precedent; `MalteseNewsClassification` for the multi-label (FoS) shape | Four task modules under `mteb/tasks/{classification,multilabel_classification}/eng/scirepeval_*.py` + their `__init__.py` registrations + one descriptive-stats JSON each | Proved correctness by running each task under two models (random ≈ chance vs e5-small clearly above) rather than trusting an import · fact-checked provenance: corrected the venue (EMNLP-not-ACL) · caught two CI failures the local run missed, one duplicate title+abstract in the DRSM split (deduped to stop train/test leakage) and a `typos` false-positive on the `FoS` acronym (allowlisted) · framework auto-parametrizes each new task into the test grid (the "new test") · ruff clean |
+| **8, marimo-lsp #581** | Error messages print a raw cell UUID because four cases in `prettyErrorMessage` ignore the `cellIdMapper` they already receive | The multiple-definition case already threads `cellIdMapper` (built by `createCellIdMapper`, which makes `cell-N` navigation links), and the caller renders text/html when the string has an anchor | `extension/src/lib/errors.ts` (a `cellRef` helper applied to the exception, ancestor-stopped, ancestor-prevented, strict-exception cases) | Reused an existing abstraction rather than inventing one · 3 tests written failing first (plain text + HTML link) · full TS suite 491 passed · fallback to raw id preserved so existing snapshots unchanged |
+| **9, marimo-lsp #531** | Opening a dirty file as a notebook reads stale on-disk bytes (an empty notebook) and then discards the unsaved buffer when the close prompt is declined, a data loss | The repo's own `Effect.promise(() => doc.save())` save idiom in `installPackages.ts` | `extension/src/commands/openAsMarimoNotebook.ts` (save the backing document when dirty before the open and close) | Reproduced the vulnerable ordering with a red-first unit test (save count 0 before, 1 after) since the GUI flow cannot run headlessly · manual GUI confirmation done by hand · full TS suite 490 passed · clean-buffer path unchanged |
+| **10, pyfixest #1236** | The `predict` shape difference (None branch returns the cleaned estimation sample, newdata branch returns one row per input) is intended and matches R fixest; the only real gap is a covariate NaN producing a NaN prediction silently while unseen FE levels already warn | The existing unseen-fixed-effect-level warning in the same `get_design_matrix_and_yhat` function | `pyfixest/estimation/post_estimation/prediction.py` (add the missing warning) + the `feols_.py` `predict` docstring | Settled "bug vs by design" with the repo's own R-parity tests before touching anything · kept every returned value unchanged · red-first warning test · 83 passed, ruff + mypy green · offered the shape-changing alternative to the maintainer and explained why it was rejected |
 
 ---
 
@@ -1361,6 +1373,236 @@ worth generalizing; the right move was to expand deliberately, and to exclude th
 configs *out loud*, rather than either over-building up front or resisting the ask. And on a data
 contribution the *provenance details* (license, annotation method, venue) are part of the correctness:
 better to mark a field uncertain and then source it than to guess.
+
+---
+
+# Cycle 8
+
+## Cycle 8 — Project
+
+**Project:** [marimo-team/marimo-lsp](https://github.com/marimo-team/marimo-lsp) (TypeScript / Python)
+**My fork:** https://github.com/lazizbekravshanov/marimo-lsp
+
+Back in the repo from Cycle 1 (the marimo VS Code extension and its LSP server), this time to fix how cell error messages identify the failing cell.
+
+## Cycle 8 — Phase I: Issue Selection
+
+### Issue
+
+[marimo-team/marimo-lsp #581: Error message using unclear cell identifier instead of cell number](https://github.com/marimo-team/marimo-lsp/issues/581). Label: `bug`.
+
+### Why I Chose This Issue
+
+Skill match: we merged marimo-lsp #603 in Cycle 1, so we already know this TypeScript extension, its Effect based service layer, and its test setup. Learning goal: work in the notebook output rendering path and reuse an abstraction the codebase already has (a cell id to cell number mapper) instead of inventing one. The problem in plain words: when a cell fails because an upstream cell raised, the error shows a raw cell UUID that the user cannot act on, when it should show the cell number and a link.
+
+### Definition of Done
+
+The exception message, and the sibling ancestor messages, show the cell number like cell-1 plus a clickable link when a notebook is available, and fall back to the raw id otherwise. A test proves the UUID is gone. The full TypeScript suite and typecheck stay green with no new errors.
+
+### Phase I Outcome
+
+Verified claimable: #581 open, unassigned, no linked PR (checked the issue timeline). Core maintainer @mscolnick had already confirmed on the issue: "Yes this is something we can fix with a hyperlink."
+
+## Cycle 8 — Phase II: Reproduce and Plan
+
+### Environment Setup
+
+Worked in a dedicated git worktree at `~/pet/marimo-lsp-581` off upstream/main, kept isolated from the Cycle 9 work in the same repo. Installed extension deps with `pnpm -C extension install`. The extension tests need a sibling marimo checkout at `~/pet/marimo`, which the package.json links by relative path. Setup challenge: the repo's `.marimo-version` is 0.23.15 while the local sibling was at 0.23.10, which leaves one pre-existing, unrelated typecheck error in a file we did not touch (a newer message tag missing from the older frontend types), confirmed present on the clean base.
+
+### Reproduction Process
+
+Numbered steps:
+1. In VS Code with the marimo extension, create a notebook where cell 1 raises (for example indexing past the end of a short list) and cell 2 reads a variable that cell 1 was supposed to define.
+2. Run cell 1. It raises.
+3. Run cell 2, the descendant. marimo emits a marimo-error output of type exception whose raising_cell is cell 1's UUID.
+4. prettyErrorMessage formats that output and the notebook shows the error.
+
+Expected: the message names the cell by number (cell-1) and links to it. Actual before the fix: `Ancestor raised: An ancestor raised an exception (NameError):  (raised in cell: 918d2406-014b-4a20-9c9a-ba8cb7ab2ba2)`.
+
+### Root Cause
+
+In `extension/src/lib/errors.ts`, `prettyErrorMessage(error, cellIdMapper?)` interpolated the raw `error.raising_cell` UUID in the exception case, ignoring the `cellIdMapper` parameter that the multiple definition case already uses. The same defect was in three sibling cases: ancestor stopped, ancestor prevented, strict exception. Confirmed against marimo core that the issue's message is the exception error tag.
+
+### Solution Plan (UMPIRE)
+
+**Understand.** Error messages show a raw cell UUID that means nothing to users; the maintainer wants a cell number plus a hyperlink.
+**Match.** The multiple definition case already threads `cellIdMapper` to produce cell-N labels, built by `createCellIdMapper` (which calls `createCellNavigationLink`), and the caller already renders the message as text/html when it contains an anchor. Mirror that.
+**Plan.** Thread the existing mapper through the four cases that render a raw cell id.
+**Implement.** Add a small `cellRef(cellId)` helper equal to `cellIdMapper?.(cellId) ?? cellId` and use it in those four cases.
+**Review.** Keep the diff small and preserve the fallback when no mapper is passed, so existing snapshots do not change.
+**Evaluate.** Three tests written failing first, then the full TypeScript suite and typecheck.
+
+## Cycle 8 — Phase III: Build
+
+Wrote three tests first (exception plain text, exception HTML link, ancestor stopped), watched them fail (3 failed / 23 passed), then implemented the `cellRef` helper and applied it to the four cases. Tests went green (26 in the file). Full suite `just test-ts`: 491 passed, 1 skipped. The only lint issue is the pre-existing unrelated typecheck error from the version skew described above, confirmed identical on the clean base via `git stash`, so this change adds zero new errors.
+
+Before: `(raised in cell: 918d2406-014b-4a20-9c9a-ba8cb7ab2ba2)`. After: `(raised in cell: cell-1)` where cell-1 is a clickable link.
+
+### Challenges Faced (Cycle 8)
+
+The main judgment call was scope. The issue names only the exception case, but three sibling messages had the identical raw-UUID defect. Fixing all four keeps the maintainer from seeing one fixed message next to three broken ones. The intro comment flags that this can be trimmed to just the exception case if preferred.
+
+## Cycle 8 — Phase IV: Submit and Iterate
+
+**PR:** [marimo-team/marimo-lsp #643](https://github.com/marimo-team/marimo-lsp/pull/643), "Show cell number and link in error messages instead of the raw cell id (#581)". Non-draft, base main, `Closes #581`. The description is why before what with an acceptance checklist and before/after evidence. A Phase I intro comment was posted on the issue asking @mscolnick to confirm the link surface versus a plain cell number. Commit `c8ad5df1`, one atomic Conventional Commit, no AI attribution.
+
+**Status:** in review.
+
+**Learnings (Cycle 8):** reuse the abstraction the codebase already has. The fix was small because the cell number mapper and the clickable link were already built for another message; the bug was simply that four cases did not call them.
+
+---
+
+# Cycle 9
+
+## Cycle 9 — Project
+
+**Project:** [marimo-team/marimo-lsp](https://github.com/marimo-team/marimo-lsp) (TypeScript / Python)
+**My fork:** https://github.com/lazizbekravshanov/marimo-lsp
+
+A second contribution to the marimo VS Code extension in parallel with Cycle 8, this one a data loss bug in the "Open as notebook" flow.
+
+## Cycle 9 — Phase I: Issue Selection
+
+### Issue
+
+[marimo-team/marimo-lsp #531: Open unsaved file as Marimo notebook deletes it](https://github.com/marimo-team/marimo-lsp/issues/531). Label: `bug`.
+
+### Why I Chose This Issue
+
+Skill match from Cycle 1 in this same extension, so I already know the command and CodeLens architecture and the Effect based VsCode service layer. It is a labeled bug and a data loss bug, which is the highest impact class of defect, so fixing it is genuinely valuable. Learning goal: understand how VS Code reopens a file under a different editor type (`vscode.openWith`) and how a custom notebook serializer interacts with dirty text buffers.
+
+### Definition of Done
+
+Opening a marimo notebook must never destroy the file's content, proven by an automated test plus a manual GUI check.
+
+### Phase I Outcome
+
+Verified claimable: #531 open, unassigned, no linked PR (checked the issue timeline and `gh pr list`).
+
+## Cycle 9 — Phase II: Reproduce and Plan
+
+### Environment Setup
+
+Worked in a separate git worktree at `~/pet/marimo-lsp-531` off upstream/main, isolated from Cycle 8. `pnpm -C extension install` for deps; the shared sibling marimo checkout at `~/pet/marimo` supplies the linked workspace. Same 0.23.10 versus 0.23.15 version skew note as Cycle 8, which leaves one unrelated pre-existing typecheck error that is not mine.
+
+### Reproduction Process
+
+Numbered steps (with a throwaway scratch file):
+1. Create a new file `scratch_repro.py` and save it once so it has a path.
+2. Type marimo content into it (an `import marimo`, `app = marimo.App()`, and a cell defining `x = 123`).
+3. Do not save. The buffer is now dirty and the "Open as notebook" CodeLens appears.
+4. Click "Open as notebook".
+5. VS Code prompts to save before closing the text editor. Choose "Don't Save".
+
+Expected: the notebook opens showing the content. Actual before the fix: the notebook opens empty with no cells and the unsaved content is destroyed.
+
+### Root Cause
+
+The command `openAsMarimoNotebook` in `extension/src/commands/openAsMarimoNotebook.ts` ran `vscode.openWith` then `closeTextEditorTab`, with no handling of unsaved content. The notebook is deserialized from the copy of the file on disk (`NotebookSerializer.deserializeNotebook` receives on-disk bytes). When the buffer is dirty, the on-disk copy is empty or stale, so the notebook opens with no cells, and closing the text editor drops the unsaved content when the user declines the save prompt. The handler never persisted the dirty buffer first.
+
+### Solution Plan (UMPIRE)
+
+**Understand.** Opening a dirty file as a notebook reads stale disk content and then discards the unsaved buffer on close, losing data.
+**Match.** The repo already uses `Effect.promise(() => doc.save())` to persist a document (in `installPackages.ts` and `MarimoNotebookDocument.ts`). Mirror it.
+**Plan.** Before opening, resolve the backing text document and, if it is dirty, save it first.
+**Implement.** Track the backing document, find it among the visible editors by URI when not handed one directly, and save when `isDirty`. Leave clean buffers untouched.
+**Review.** No behavior change for the clean path; existing tests stay green.
+**Evaluate.** A failing test first that asserts a dirty buffer is saved before the open, plus a guard test that a clean buffer is not saved, then the full suite.
+
+## Cycle 9 — Phase III: Build
+
+Wrote the failing test first: a dirty active document must be saved before the open. It failed with the save count at zero, which reproduces the data loss ordering at the unit level. Implemented the minimal fix (save the dirty buffer before opening) and a guard test for the clean path. Command tests: 5 passed (was 3). Full `just test-ts`: 490 passed, 1 skipped. New and changed code is lint clean; the one remaining lint error is the unrelated pre-existing version-skew error. One atomic Conventional Commit `7aa17bb`, no AI attribution.
+
+### Challenges Faced (Cycle 9)
+
+This bug is a GUI ordering problem, so the button-level reproduction cannot be run headlessly. I compensated with a unit test that deterministically exercises the exact vulnerable logic (dirty document to command to save behavior), red before the fix and green after. The design choice was to save the dirty buffer rather than build a truly unsaved notebook, which is the minimal fully data-safe fix; the PR text notes this in case the maintainer prefers a prompt.
+
+## Cycle 9 — Phase IV: Submit and Iterate
+
+**PR:** [marimo-team/marimo-lsp #644](https://github.com/marimo-team/marimo-lsp/pull/644), "Save the unsaved buffer before opening a file as a marimo notebook (#531)". Non-draft, base main, `Closes #531`. Why before what, emphasizing the data loss nature, with before/after evidence and an acceptance checklist. A Phase I intro comment was posted on the issue. Commit `7aa17bb`, no AI attribution.
+
+**Manual verification:** the one GUI confirmation the unit test could not cover (unsaved marimo file, "Open as notebook", decline the save prompt, content preserved) was run by hand and passed.
+
+**Status:** in review.
+
+**Learnings (Cycle 9):** for a data loss bug, prove the vulnerable ordering with a deterministic unit test even when the full GUI flow cannot run headlessly, then confirm the one manual step by hand. The safe fix was also the smallest one: write the buffer to disk before anything reads or closes it.
+
+---
+
+# Cycle 10
+
+## Cycle 10 — Project
+
+**Project:** [py-econometrics/pyfixest](https://github.com/py-econometrics/pyfixest) (Python)
+**My fork:** https://github.com/lazizbekravshanov/pyfixest
+
+Back in pyfixest from Cycles 2 and 3, this time in the same `predict` code path that Cycle 2 touched.
+
+## Cycle 10 — Phase I: Issue Selection
+
+### Issue
+
+[py-econometrics/pyfixest #1236: NA handling for predict and predict with new data](https://github.com/py-econometrics/pyfixest/issues/1236).
+
+### Why I Chose This Issue
+
+Direct skill match: we merged pyfixest #1368 (Cycle 2) and #1385 (Cycle 3), and Cycle 2 was specifically about `predict` with dropped fixed effects. This issue lives in the exact same `predict` code path, so it is our wheelhouse and we already know the surrounding tests and the R parity conventions.
+
+### Definition of Done (adapted to findings)
+
+The reporter asks whether it is intentional that `predict` drops NaNs and singleton fixed effect levels when `newdata is None` but keeps them when `newdata` is passed, and the maintainer suspected it is by design. So Phase I was investigation, not a rushed fix. The adapted Definition of Done: determine the truth with evidence, and if it is intended, document both branches and close any small real gap without changing returned values, then ask the maintainer to confirm before opening a PR.
+
+### Phase I Outcome
+
+Verified claimable: #1236 open, unassigned, no linked PR. Investigation verdict: the behavior is intended and matches R `fixest`, proven by the repo's own R parity tests (`tests/test_predict_resid_fixef.py` asserts `len(predict())` matches R fitted values and `len(predict(newdata))` matches R `predict(newdata)`, and `test_predict_nas` compares row for row including NaNs). One real gap remained: unseen fixed effect levels already warn, but a NaN in a right hand side covariate produced a NaN prediction silently.
+
+## Cycle 10 — Phase II: Reproduce and Plan
+
+### Environment Setup
+
+Worked in `~/pet/pyfixest` on a branch off upstream/master. The project uses `pixi`; tests and lint run via `pixi run`. The R comparison file needs rpy2, which is not in the default env, so it was not executed; the change does not alter returned values, so those assertions are unaffected.
+
+### Reproduction Process
+
+Numbered steps:
+1. `data = pf.get_data(N=1_000, seed=0, model="Feols")` (contains a NaN at row 0 in Y and row 1 in X1).
+2. `fit = pf.feols("Y ~ X1", data=data)`, which gives `fit._N == 998`.
+3. `fit.predict(newdata=None)` returns length 998 with no NaN.
+4. `fit.predict(newdata=data)` returns length 1000 with one NaN at row 1, and before the fix no warning.
+
+Expected: consistent, discoverable NaN semantics; when a newdata row cannot be predicted, the user is told, as already happens for unseen fixed effect levels. Actual before the fix: the shapes differ by design and match R, but the covariate NaN was produced silently while the fixed effect level path warns.
+
+### Root Cause
+
+`Feols.predict` in `pyfixest/estimation/models/feols_.py` has two branches. The `newdata is None` branch returns `_Y_hat_link`, which has length `_N` because NaN and singleton rows were dropped at fit time. The `newdata` branch calls `get_design_matrix_and_yhat` in `pyfixest/estimation/post_estimation/prediction.py`, which initializes predictions to NaN and only fills rows that survive the design matrix, so covariate NaN rows stay NaN. Unseen fixed effect levels warn there, but the covariate NaN case did not.
+
+### Solution Plan (UMPIRE)
+
+**Understand.** The shape difference between the two branches is intended and matches fixest; the only inconsistency is that one failure mode reports and the other is silent.
+**Match.** The unseen fixed effect level warning already exists in the same function. Mirror it.
+**Plan.** Keep returned values exactly as they are (R parity is asserted by the repo's tests), add a warning in the newdata branch when covariate NaN rows are dropped, and document both branches in the `predict` docstring.
+**Implement.** A small warning plus the docstring.
+**Review.** No change to any returned value, so no value based test can break.
+**Evaluate.** A failing test first for the new warning, then the regression suite and lint.
+**Alternative offered to the maintainer:** make the newdata branch drop covariate NaN and unseen level rows so it matches the None branch shape. Rejected because the repo's tests assert `len(predict(newdata)) == nrow(newdata)` and R parity, so changing the shape would break the intended contract. A docstring only change is also offered.
+
+## Cycle 10 — Phase III: Build
+
+Wrote `tests/test_predict_na_handling.py` first (no rpy2 so it runs in the default env), watched the covariate NaN warning test fail with "DID NOT WARN". Implemented the minimal warning in `get_design_matrix_and_yhat` and updated the `predict` docstring. Tests went green (3 passed). Regression across `tests/test_errors.py`, `tests/test_others.py`, and the new file: 83 passed, 1 skipped. `pixi run lint`: ruff check, ruff format, and mypy all pass. One atomic Conventional Commit `53feeab4`, no AI attribution.
+
+Before: `predict(newdata=data)` returned a NaN for the covariate NaN row with no warning. After: same values, plus a UserWarning naming how many rows contain a covariate NaN and will be NaN.
+
+### Challenges Faced (Cycle 10)
+
+The hard part was resisting the urge to "fix" something that was not broken. The evidence (the repo's own R parity tests) showed the returned values are correct and intended, so the right contribution was a reporting and documentation improvement, not a behavior change. The change is scoped to a single new warning plus a docstring, and the issue reply asks the maintainer to confirm the semantics before a PR.
+
+## Cycle 10 — Phase IV: Submit and Iterate
+
+Posted an investigation comment on [#1236](https://github.com/py-econometrics/pyfixest/issues/1236) stating the verdict (intended, R matching), describing the one silent gap, and asking @s3alfisc to confirm the direction (add the warning, or docstring only) before a PR. The branch `issue-1236-predict-na-handling` (commit `53feeab4`) is ready to open as a PR the moment the maintainer confirms, and it would be `Part of #1236`, not `Closes`, because it is a reporting and documentation change rather than a behavior change.
+
+**Status:** investigation posted, PR held pending maintainer confirmation. This respects that the issue may be closed as intended by design.
+
+**Learnings (Cycle 10):** investigate before you change. On a "maybe by design" issue, the most valuable move was to gather the evidence that settled it (the repo's own parity tests), keep the intended behavior, and offer the maintainer a small, honest improvement rather than force a change that would break the contract.
 
 ---
 

@@ -1419,11 +1419,11 @@ Numbered steps:
 
 Expected: the message names the cell by number (cell-1) and links to it. Actual before the fix: `Ancestor raised: An ancestor raised an exception (NameError):  (raised in cell: 918d2406-014b-4a20-9c9a-ba8cb7ab2ba2)`.
 
-### Root Cause
+### Understanding the Issue
 
-In `extension/src/lib/errors.ts`, `prettyErrorMessage(error, cellIdMapper?)` interpolated the raw `error.raising_cell` UUID in the exception case, ignoring the `cellIdMapper` parameter that the multiple definition case already uses. The same defect was in three sibling cases: ancestor stopped, ancestor prevented, strict exception. Confirmed against marimo core that the issue's message is the exception error tag.
+In `extension/src/lib/errors.ts`, `prettyErrorMessage(error, cellIdMapper?)` interpolated the raw `error.raising_cell` UUID in the exception case at line 30, ignoring the `cellIdMapper` parameter that the multiple definition case already uses. The same defect was in three sibling cases: ancestor stopped (line 26), ancestor prevented (line 28), strict exception (line 32). The in-repo match is `createCellIdMapper`, defined at `extension/src/kernel/ExecutionRegistry.ts:662`, which calls `createCellNavigationLink` at `extension/src/types.ts:243` to return an `<a ...>cell-N</a>` anchor. The caller at `ExecutionRegistry.ts:748-761` already renders the message as text/html when it contains an anchor, so the link is clickable automatically. Confirmed against marimo core that the issue's message is the exception error tag.
 
-### Solution Plan (UMPIRE)
+### Solution Approach (UMPIRE)
 
 **Understand.** Error messages show a raw cell UUID that means nothing to users; the maintainer wants a cell number plus a hyperlink.
 **Match.** The multiple definition case already threads `cellIdMapper` to produce cell-N labels, built by `createCellIdMapper` (which calls `createCellNavigationLink`), and the caller already renders the message as text/html when it contains an anchor. Mirror that.
@@ -1438,17 +1438,25 @@ Wrote three tests first (exception plain text, exception HTML link, ancestor sto
 
 Before: `(raised in cell: 918d2406-014b-4a20-9c9a-ba8cb7ab2ba2)`. After: `(raised in cell: cell-1)` where cell-1 is a clickable link.
 
+### Testing Strategy
+
+The tests live in `extension/src/lib/__tests__/errors.test.ts`, next to the existing multiple definition mapper tests, so they follow the same pattern in the same file. I added three tests written failing first (exception plain text, exception HTML link, ancestor stopped): they failed first (3 failed / 23 passed), then passed once the `cellRef` helper was applied (26 in the file). The full TypeScript suite `just test-ts` ran 491 passed, 1 skipped. Type and lint checks added zero new errors; the single pre-existing typecheck error in `KernelManager.ts:427` comes from the 0.23.10 versus 0.23.15 marimo version skew and was confirmed on the clean base via `git stash`, not introduced by this change. Manual check: rendered the before and after message and confirmed the raw UUID is replaced by a clickable cell-1 link.
+
 ### Challenges Faced (Cycle 8)
 
 The main judgment call was scope. The issue names only the exception case, but three sibling messages had the identical raw-UUID defect. Fixing all four keeps the maintainer from seeing one fixed message next to three broken ones. The intro comment flags that this can be trimmed to just the exception case if preferred.
 
 ## Cycle 8, Phase IV: Submit and Iterate
 
-**PR:** [marimo-team/marimo-lsp #643](https://github.com/marimo-team/marimo-lsp/pull/643), "Show cell number and link in error messages instead of the raw cell id (#581)". Non-draft, base main, `Closes #581`. The description is why before what with an acceptance checklist and before/after evidence. A Phase I intro comment was posted on the issue asking @mscolnick to confirm the link surface versus a plain cell number. Commit `c8ad5df1`, one atomic Conventional Commit, no AI attribution.
+### Pull Request
 
-**Status:** in review.
+[marimo-team/marimo-lsp #643](https://github.com/marimo-team/marimo-lsp/pull/643): "Show cell number and link in error messages instead of the raw cell id (#581)". One line summary: thread the existing cell id mapper through the four error cases that rendered a raw UUID so each shows a clickable cell-N link. Non-draft, base main, `Closes #581`. The description is why before what with an acceptance checklist and before/after evidence. A Phase I intro comment was posted on the issue asking @mscolnick to confirm the link surface versus a plain cell number. Commit `c8ad5df1`, one atomic Conventional Commit, no AI attribution. Status: Awaiting review.
 
-**Learnings (Cycle 8):** reuse the abstraction the codebase already has. The fix was small because the cell number mapper and the clickable link were already built for another message; the bug was simply that four cases did not call them.
+### Maintainer Feedback Log
+
+No maintainer feedback yet as of 2026-07-28; the PR is awaiting review. Dated entries with commit refs will be logged here as feedback arrives.
+
+**Learnings (Cycle 8):** Technical skill gained: threading an existing abstraction (the cell id mapper and its navigation link) through new call sites instead of building a new one, and working in the notebook output rendering path of an Effect based extension. Challenge overcome: the scope call, since the issue named only the exception case but three sibling cases had the identical raw UUID defect; fixing all four keeps the maintainer from seeing one fixed message next to three broken ones. What I would do differently: put the scope question in the intro comment even earlier, so the maintainer can confirm the four case scope before the tests are written rather than after.
 
 ---
 
@@ -1496,14 +1504,14 @@ Numbered steps (with a throwaway scratch file):
 
 Expected: the notebook opens showing the content. Actual before the fix: the notebook opens empty with no cells and the unsaved content is destroyed.
 
-### Root Cause
+### Understanding the Issue
 
-The command `openAsMarimoNotebook` in `extension/src/commands/openAsMarimoNotebook.ts` ran `vscode.openWith` then `closeTextEditorTab`, with no handling of unsaved content. The notebook is deserialized from the copy of the file on disk (`NotebookSerializer.deserializeNotebook` receives on-disk bytes). When the buffer is dirty, the on-disk copy is empty or stale, so the notebook opens with no cells, and closing the text editor drops the unsaved content when the user declines the save prompt. The handler never persisted the dirty buffer first.
+The command `openAsMarimoNotebook` in `extension/src/commands/openAsMarimoNotebook.ts` (originally lines 23-65) ran `vscode.openWith` then `closeTextEditorTab`, with no handling of unsaved content. The CodeLens that triggers it lives in `extension/src/features/MarimoCodeLensProvider.ts`. The notebook is deserialized from the copy of the file on disk by `NotebookSerializer.deserializeNotebook` at `extension/src/notebook/NotebookSerializer.ts:153`. When the buffer is dirty, the on-disk copy is empty or stale, so the notebook opens with no cells, and closing the text editor drops the unsaved content when the user declines the save prompt. The handler never persisted the dirty buffer first.
 
-### Solution Plan (UMPIRE)
+### Solution Approach (UMPIRE)
 
 **Understand.** Opening a dirty file as a notebook reads stale disk content and then discards the unsaved buffer on close, losing data.
-**Match.** The repo already uses `Effect.promise(() => doc.save())` to persist a document (in `installPackages.ts` and `MarimoNotebookDocument.ts`). Mirror it.
+**Match.** The repo already uses `Effect.promise(() => doc.save())` to persist a document (at `installPackages.ts:146` and `MarimoNotebookDocument.ts:300`). Mirror it.
 **Plan.** Before opening, resolve the backing text document and, if it is dirty, save it first.
 **Implement.** Track the backing document, find it among the visible editors by URI when not handed one directly, and save when `isDirty`. Leave clean buffers untouched.
 **Review.** No behavior change for the clean path; existing tests stay green.
@@ -1513,19 +1521,27 @@ The command `openAsMarimoNotebook` in `extension/src/commands/openAsMarimoNotebo
 
 Wrote the failing test first: a dirty active document must be saved before the open. It failed with the save count at zero, which reproduces the data loss ordering at the unit level. Implemented the minimal fix (save the dirty buffer before opening) and a guard test for the clean path. Command tests: 5 passed (was 3). Full `just test-ts`: 490 passed, 1 skipped. New and changed code is lint clean; the one remaining lint error is the unrelated pre-existing version-skew error. One atomic Conventional Commit `7aa17bb`, no AI attribution.
 
+### Testing Strategy
+
+The tests live in `extension/src/commands/__tests__/openAsMarimoNotebook.test.ts`, alongside the existing command tests, so they follow the repo's existing command test pattern. I added a failing-first test (TDD) asserting that a dirty buffer is saved before the open, with the save count 0 before the fix and 1 after, plus a guard test that a clean buffer is not saved. Mock support for the save behavior was added in `extension/src/__mocks__/TestVsCode.ts`. The command tests went from 3 to 5 passing. The full suite `just test-ts` ran 490 passed, 1 skipped. Manual testing: the one GUI step the unit test cannot cover was run by hand and passed (create an unsaved marimo looking file, Open as notebook, decline the save prompt, content preserved).
+
 ### Challenges Faced (Cycle 9)
 
 This bug is a GUI ordering problem, so the button-level reproduction cannot be run headlessly. I compensated with a unit test that deterministically exercises the exact vulnerable logic (dirty document to command to save behavior), red before the fix and green after. The design choice was to save the dirty buffer rather than build a truly unsaved notebook, which is the minimal fully data-safe fix; the PR text notes this in case the maintainer prefers a prompt.
 
 ## Cycle 9, Phase IV: Submit and Iterate
 
-**PR:** [marimo-team/marimo-lsp #644](https://github.com/marimo-team/marimo-lsp/pull/644), "Save the unsaved buffer before opening a file as a marimo notebook (#531)". Non-draft, base main, `Closes #531`. Why before what, emphasizing the data loss nature, with before/after evidence and an acceptance checklist. A Phase I intro comment was posted on the issue. Commit `7aa17bb`, no AI attribution.
+### Pull Request
+
+[marimo-team/marimo-lsp #644](https://github.com/marimo-team/marimo-lsp/pull/644): "Save the unsaved buffer before opening a file as a marimo notebook (#531)". One line summary: resolve the backing text document and, when it is dirty, save it before the open and close so no unsaved content is lost. Non-draft, base main, `Closes #531`. Why before what, emphasizing the data loss nature, with before/after evidence and an acceptance checklist. A Phase I intro comment was posted on the issue. Commit `7aa17bb`, no AI attribution. Status: Awaiting review.
 
 **Manual verification:** the one GUI confirmation the unit test could not cover (unsaved marimo file, "Open as notebook", decline the save prompt, content preserved) was run by hand and passed.
 
-**Status:** in review.
+### Maintainer Feedback Log
 
-**Learnings (Cycle 9):** for a data loss bug, prove the vulnerable ordering with a deterministic unit test even when the full GUI flow cannot run headlessly, then confirm the one manual step by hand. The safe fix was also the smallest one: write the buffer to disk before anything reads or closes it.
+No maintainer feedback yet as of 2026-07-28; the PR is awaiting review. Dated entries with commit refs will be logged here as feedback arrives.
+
+**Learnings (Cycle 9):** Technical skill gained: understanding how VS Code reopens a file under a different editor type (`vscode.openWith`) and how a custom notebook serializer reads on-disk bytes, plus mocking VS Code save behavior in a unit test. Challenge overcome: this is a GUI ordering bug that cannot run headlessly, so I proved the vulnerable ordering with a deterministic unit test (red before, green after) and confirmed the one manual step by hand. What I would do differently: offer the alternative fix (prompt the user instead of silently saving) directly in the PR body from the start, so the maintainer has both options up front.
 
 ---
 
@@ -1572,11 +1588,11 @@ Numbered steps:
 
 Expected: consistent, discoverable NaN semantics; when a newdata row cannot be predicted, the user is told, as already happens for unseen fixed effect levels. Actual before the fix: the shapes differ by design and match R, but the covariate NaN was produced silently while the fixed effect level path warns.
 
-### Root Cause
+### Understanding the Issue
 
-`Feols.predict` in `pyfixest/estimation/models/feols_.py` has two branches. The `newdata is None` branch returns `_Y_hat_link`, which has length `_N` because NaN and singleton rows were dropped at fit time. The `newdata` branch calls `get_design_matrix_and_yhat` in `pyfixest/estimation/post_estimation/prediction.py`, which initializes predictions to NaN and only fills rows that survive the design matrix, so covariate NaN rows stay NaN. Unseen fixed effect levels warn there, but the covariate NaN case did not.
+`Feols.predict` in `pyfixest/estimation/models/feols_.py` at line 1748 has two branches. The `newdata is None` branch (lines 1841-1852) returns `_Y_hat_link`, which has length `_N` because NaN and singleton rows were dropped at fit time. The `newdata` branch (lines 1853-1877) calls `get_design_matrix_and_yhat` in `pyfixest/estimation/post_estimation/prediction.py`, where `y_hat` is initialized to NaN at lines 77-79 and only rows that survive the design matrix are filled, so covariate NaN rows stay NaN. Unseen fixed effect levels already warn at `prediction.py:158`, but the covariate NaN case did not. R parity evidence: `tests/test_predict_resid_fixef.py:133` and `:148-152` assert the shapes match R, and the `test_predict_nas` test (lines 200-244) compares row for row including NaNs.
 
-### Solution Plan (UMPIRE)
+### Solution Approach (UMPIRE)
 
 **Understand.** The shape difference between the two branches is intended and matches fixest; the only inconsistency is that one failure mode reports and the other is silent.
 **Match.** The unseen fixed effect level warning already exists in the same function. Mirror it.
@@ -1592,17 +1608,27 @@ Wrote `tests/test_predict_na_handling.py` first (no rpy2 so it runs in the defau
 
 Before: `predict(newdata=data)` returned a NaN for the covariate NaN row with no warning. After: same values, plus a UserWarning naming how many rows contain a covariate NaN and will be NaN.
 
+### Testing Strategy
+
+I wrote `tests/test_predict_na_handling.py` first, following the existing predict test conventions used in `tests/test_predict_resid_fixef.py` but with no rpy2 so it runs in the default env. Written failing first (TDD): the covariate NaN warning test failed with "DID NOT WARN", then passed once the warning was added (3 passed). Regression across `tests/test_errors.py`, `tests/test_others.py`, and the new file: 83 passed, 1 skipped. `pixi run lint` (ruff check, ruff format, and mypy) all pass. Manual testing: reproduced the issue's script by hand (`predict(newdata=data)` on data with a covariate NaN) and confirmed the returned values are unchanged and the new UserWarning now names how many rows will be NaN.
+
 ### Challenges Faced (Cycle 10)
 
 The hard part was resisting the urge to "fix" something that was not broken. The evidence (the repo's own R parity tests) showed the returned values are correct and intended, so the right contribution was a reporting and documentation improvement, not a behavior change. The change is scoped to a single new warning plus a docstring, and the issue reply asks the maintainer to confirm the semantics before a PR.
 
 ## Cycle 10, Phase IV: Submit and Iterate
 
-Posted an investigation comment on [#1236](https://github.com/py-econometrics/pyfixest/issues/1236) stating the verdict (intended, R matching), describing the one silent gap, and asking @s3alfisc to confirm the direction (add the warning, or docstring only) before a PR. The branch `issue-1236-predict-na-handling` (commit `53feeab4`) is ready to open as a PR the moment the maintainer confirms, and it would be `Part of #1236`, not `Closes`, because it is a reporting and documentation change rather than a behavior change.
+### Pull Request
+
+No PR opened yet: this is investigation stage. Posted an investigation comment on [#1236](https://github.com/py-econometrics/pyfixest/issues/1236) stating the verdict (intended, R matching), describing the one silent gap, and asking @s3alfisc to confirm the direction (add the warning, or docstring only) before a PR. One line summary of the held change: add a UserWarning when the newdata branch drops covariate NaN rows and document both predict branches, with no returned value changed. The branch `issue-1236-predict-na-handling` (commit `53feeab4`) is ready to open the moment the maintainer confirms, and it would be `Part of #1236`, not `Closes`, because it is a reporting and documentation change rather than a behavior change. Status: Held pending maintainer confirmation (no PR opened yet).
+
+### Maintainer Feedback Log
+
+No maintainer feedback yet as of 2026-07-28; the investigation comment is awaiting the maintainer's reply. Dated entries with commit refs will be logged here as feedback arrives.
 
 **Status:** investigation posted, PR held pending maintainer confirmation. This respects that the issue may be closed as intended by design.
 
-**Learnings (Cycle 10):** investigate before you change. On a "maybe by design" issue, the most valuable move was to gather the evidence that settled it (the repo's own parity tests), keep the intended behavior, and offer the maintainer a small, honest improvement rather than force a change that would break the contract.
+**Learnings (Cycle 10):** Technical skill gained: reading two predict branches against the repo's R parity tests to prove which behavior is intended, and adding a warning that mirrors an existing one without touching returned values. Challenge overcome: resisting the urge to "fix" behavior that the evidence showed was correct and intended, so the contribution became a reporting and documentation improvement rather than a behavior change. What I would do differently: open the investigation comment earlier in the cycle so the maintainer's confirmation can arrive before the build work, rather than holding a finished branch.
 
 ---
 

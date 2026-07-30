@@ -1361,6 +1361,14 @@ was posted on #591 first (Phase-I intro).
   **odc-by** (SciRepEval README); biomimicry `annotations_creators` → **human-annotated** (PeTaL, per
   the paper); and the "prefer a pre-formatted HF dataset over an on-the-fly `dataset_transform`"
   suggestion acknowledged and deferred to @Samoed (who he flagged sometimes handles that step).
+- **@Samoed** also suggested running the tasks in a `cross_validation` config. I investigated it
+  (2026-07-30): there is no cross_validation config in the `allenai/scirepeval` dataset itself, so he
+  means MTEB's own `is_cross_validation` KFold mode on `AbsTaskClassification` (`mteb/abstasks/classification.py:120,323,350`),
+  which around 40 existing single-split tasks already use (for example `SpokeNEnglish`). I posted an
+  evidence-based reply confirming the mechanism, explaining that it is a clean fit for the single-label
+  single-split tasks (`drsm`, `biomimicry`, `mesh`) but would not run correctly on the multilabel `FoS`
+  task without extra framework work (it only overrides `_undersample_data_indices`, not the helpers the
+  CV path calls), and asked whether he wants separate CV tasks or a switch on the existing ones.
 
 **Status:** in review, **positively reviewed** by the lead maintainer, addressing the minor notes.
 `make lint-check` and the task quality/metadata grids are green locally; the hosted CI run is gated on

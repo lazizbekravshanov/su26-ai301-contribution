@@ -1370,7 +1370,7 @@ was posted on #591 first (Phase-I intro).
   task without extra framework work (it only overrides `_undersample_data_indices`, not the helpers the
   CV path calls), and asked whether he wants separate CV tasks or a switch on the existing ones.
 
-**Status:** in review, **positively reviewed** by the lead maintainer, addressing the minor notes.
+**Status:** in review. On 2026-07-30 lead maintainer @KennethEnevoldsen confirmed his comments are **resolved** and deferred the cross_validation question to @Samoed, so the PR is MERGEABLE and the only open items are @Samoed's cross_validation call and the first-time-contributor CI approval.
 `make lint-check` and the task quality/metadata grids are green locally; the hosted CI run is gated on
 first-time-contributor workflow approval. The SciRepEval subtask that ultimately completes the suite
 would carry `Closes #591`.

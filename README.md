@@ -1369,6 +1369,11 @@ was posted on #591 first (Phase-I intro).
   single-split tasks (`drsm`, `biomimicry`, `mesh`) but would not run correctly on the multilabel `FoS`
   task without extra framework work (it only overrides `_undersample_data_indices`, not the helpers the
   CV path calls), and asked whether he wants separate CV tasks or a switch on the existing ones.
+  On 2026-07-30 @Samoed confirmed he meant MTEB's `is_cross_validation` mode and @KennethEnevoldsen
+  endorsed switching the single-label tasks to it. I implemented that switch in `da7340a6`: `drsm`,
+  `biomimicry`, and `mesh` now set `is_cross_validation = True` and run 5-fold KFold over the whole
+  evaluation split instead of a fixed train/test split, while multilabel `FoS` stays on the default
+  path. Verified the CV branch executes and beats the random baseline (DRSM e5-small 0.594 vs 0.194).
 
 **Status:** in review. On 2026-07-30 lead maintainer @KennethEnevoldsen confirmed his comments are **resolved** and deferred the cross_validation question to @Samoed, so the PR is MERGEABLE and the only open items are @Samoed's cross_validation call and the first-time-contributor CI approval.
 `make lint-check` and the task quality/metadata grids are green locally; the hosted CI run is gated on

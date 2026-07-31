@@ -1203,9 +1203,22 @@ unit tests plus 191 metadata tests pass, ruff clean. `census_division_and_state`
 per the maintainer. Commits `574f7cfe` (asset), `20c32ba3` (metadata), `1374441` (migration), `9859583`
 (dbt), `4755407` (release note).
 
-**Status:** ready for review, `Closes #5081`. The remaining likely-review items are the maintainer's
-sign-off on the thousand-to-base unit conversion (flagged in my reply) and the nightly full-integration
-CI job.
+**Review round (2026-07-31), @zaneselvans and @aesharpe.** Their inline comments and how I responded:
+- **Redacted `W` value:** the raw stocks page uses `W` for redacted data, so the coercion test should
+  cover it. I added a `W` alongside the existing `.` in a numeric column and asserted both coerce to NaN
+  (`2d0e02c7a`), keeping the `.` case @zaneselvans wanted to preserve.
+- **Seed CSV sort:** @zaneselvans noticed a row sorted to the wrong place, a sign the pre-commit hooks
+  were not installed. I ran `pixi run prek install` and re-ran the sorter; it turned out two unrelated
+  empty-partition rows had been displaced by an earlier un-hooked commit, so the hook restored them and
+  the seed CSV now differs from `main` only by the intended fuel-stocks rows (`2d0e02c7a`).
+- **Units (open):** @zaneselvans and @aesharpe are still deciding whether to keep the raw-reported units
+  (coal in thousand tons, petroleum liquids and petcoke in thousand barrels) or convert to base units,
+  and whether petcoke should be tons (a solid) rather than the raw thousand-barrels label. I left the
+  units untouched and asked them to land the decision, then I will update field names, units, and the
+  conversion in one pass.
+
+**Status:** ready for review, `Closes #5081`. Two review items addressed (`2d0e02c7a`); the units
+decision is with the maintainers, and the nightly full-integration CI job runs on their side.
 
 **Learnings (Cycle 6):** *materialize the real data before planning the fix.* Reading the issue and the
 schema suggested a simple reshape; **running** the raw asset surfaced the missing-year gap that

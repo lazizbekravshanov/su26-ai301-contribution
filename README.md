@@ -1388,7 +1388,7 @@ was posted on #591 first (Phase-I intro).
   evaluation split instead of a fixed train/test split, while multilabel `FoS` stays on the default
   path. Verified the CV branch executes and beats the random baseline (DRSM e5-small 0.594 vs 0.194).
 
-**Status:** in review. On 2026-07-30 lead maintainer @KennethEnevoldsen confirmed his comments are **resolved** and deferred the cross_validation question to @Samoed, so the PR is MERGEABLE and the only open items are @Samoed's cross_validation call and the first-time-contributor CI approval.
+**Status:** **APPROVED by both maintainers.** On 2026-07-30 @KennethEnevoldsen resolved his comments and endorsed switching the single-label tasks to cross-validation, which I implemented (`da7340a6`). On 2026-07-31 the first-time-contributor CI run was approved and passed (green), and both @KennethEnevoldsen (07:35) and @Samoed (10:10) formally **approved** the PR. Merge-ready, awaiting a maintainer to click merge.
 `make lint-check` and the task quality/metadata grids are green locally; the hosted CI run is gated on
 first-time-contributor workflow approval. The SciRepEval subtask that ultimately completes the suite
 would carry `Closes #591`.

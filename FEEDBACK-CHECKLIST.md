@@ -34,6 +34,8 @@ not just noted once and forgotten.
 - [ ] **No unrelated churn in the diff** — no reformatting, no commented-out code. **A formatter/linter warning is a *claim*, not a verdict** — check whether the repo intentionally excludes those paths. _(Cycle 4: `ruff format` "would reformat" a migration, but `migrations/` is in the repo's ruff `exclude`; reformatting would have added churn the project avoids.)_
 - [ ] **Descriptive commit messages** (Conventional Commits), regular cadence, no `wip`/`fix`/`asdf`.
 - [ ] **When adding to an enum/registry, regenerate the derived artifacts** (schemas, generated files) surgically. _(Cycle 4: adding a provider drifted `api-schemas/export.yml`; regenerated with `--api-version export` only.)_
+- [ ] **Keep shared test mocks aligned with the real API — use `vi.spyOn()` for test-only call tracking, not a new mock-only property.** _(Cycle 9: @manzt asked me to drop a `saveCalls` counter I had added to the shared `TestVsCode` mock and spy on the real `save()` method instead.)_
+- [ ] **Check the return value of an async platform call that can fail, instead of assuming success.** _(Cycle 9: @manzt asked me to stop instead of proceeding when `document.save()` returns `false`, and to add a test for that path.)_
 
 ## Phase IV — Submit & iterate
 

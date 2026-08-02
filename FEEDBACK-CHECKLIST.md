@@ -49,6 +49,7 @@ not just noted once and forgotten.
 - [ ] **@mention the reviewer to surface the PR** — external contributors can't `gh pr edit --add-reviewer` (404). _(All cycles.)_
 - [ ] **Review the maintainer's own commits on my PR** — a good comment on my *own* PR can still improve the result. _(Cycle 3: my carryforward point became @s3alfisc's final commit before merge; Cycle 2: endorsed @leostimpfle's refactor.)_
 - [ ] **Diagnose a red CI check before reacting** — is it red for *me* or red for *everyone*? Check the same job on `main`. _(Cycle 5: git-cliff "Test suite" = Codecov-upload flake, "Links" = GitLab 403s — both fail intermittently on `main` too, not my code.)_
+- [ ] **A CLA-assistant check that fails after already signing is usually stale, not a real re-ask.** Some bots don't automatically re-scan a new commit; a `recheck` comment on the PR forces it. _(Cycle 9: `CLAAssistant` flipped red on `9818afc` after I'd already signed on marimo-lsp #644; every other check stayed green.)_
 
 ## Cross-cutting
 

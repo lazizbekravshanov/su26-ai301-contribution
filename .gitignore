@@ -1,2 +1,5 @@
 # Course-provided issue list — reference material, not part of the journal
 *.xlsx
+
+# Slack post drafts — personal drafts, kept local and not published to the repo
+slack-*.md

@@ -25,6 +25,7 @@ not just noted once and forgotten.
 - [ ] **Verify external contracts by reading/executing, not assuming.** Confirm wire formats and API shapes against reality before wiring anything. _(Cycle 1: proved `disabled=True` → `options:{"disabled":true}` by running the deserialize path; Cycle 4: verified MiniMax chat vs. T2A endpoints/auth before coding.)_
 - [ ] **Find an in-repo "Match" pattern** — an analogous existing implementation to mirror, so the fix looks native. _(All cycles.)_
 - [ ] **Front-load design questions** in the claim/PR before writing code, and keep the offer open in the PR. _(Cycle 2: asked "hard error vs. graceful?" up front.)_
+- [ ] **When a data label looks physically wrong, check the authoritative source document, not just the raw file.** _(Cycle 6: the raw EIA sheet labels petcoke stocks "thousand barrels", but petcoke is a solid; @zaneselvans settled it with the EIA-923 form instructions (short tons), and @aesharpe is emailing EIA about the label error.)_
 
 ## Phase III — Build
 
@@ -36,6 +37,7 @@ not just noted once and forgotten.
 - [ ] **When adding to an enum/registry, regenerate the derived artifacts** (schemas, generated files) surgically. _(Cycle 4: adding a provider drifted `api-schemas/export.yml`; regenerated with `--api-version export` only.)_
 - [ ] **Keep shared test mocks aligned with the real API — use `vi.spyOn()` for test-only call tracking, not a new mock-only property.** _(Cycle 9: @manzt asked me to drop a `saveCalls` counter I had added to the shared `TestVsCode` mock and spy on the real `save()` method instead.)_
 - [ ] **Check the return value of an async platform call that can fail, instead of assuming success.** _(Cycle 9: @manzt asked me to stop instead of proceeding when `document.save()` returns `false`, and to add a test for that path.)_
+- [ ] **Install the repo's pre-commit hooks right after cloning, before the first commit.** A missing hook shows up as mysterious diffs in generated files that the reviewer notices before you do. _(Cycle 6: @zaneselvans spotted a mis-sorted row in the dbt seed CSV; `pixi run prek install` fixed the sort and exposed two rows an earlier un-hooked commit had displaced.)_
 
 ## Phase IV — Submit & iterate
 
@@ -50,6 +52,7 @@ not just noted once and forgotten.
 - [ ] **Review the maintainer's own commits on my PR** — a good comment on my *own* PR can still improve the result. _(Cycle 3: my carryforward point became @s3alfisc's final commit before merge; Cycle 2: endorsed @leostimpfle's refactor.)_
 - [ ] **Diagnose a red CI check before reacting** — is it red for *me* or red for *everyone*? Check the same job on `main`. _(Cycle 5: git-cliff "Test suite" = Codecov-upload flake, "Links" = GitLab 403s — both fail intermittently on `main` too, not my code.)_
 - [ ] **A CLA-assistant check that fails after already signing is usually stale, not a real re-ask.** Some bots don't automatically re-scan a new commit; a `recheck` comment on the PR forces it. _(Cycle 9: `CLAAssistant` flipped red on `9818afc` after I'd already signed on marimo-lsp #644; every other check stayed green.)_
+- [ ] **When the maintainer asks for a local run of the CI-equivalent suite, run it, and verify an environment limitation actually exists before citing one.** _(Cycle 6: I declined `pixi run pytest-ci` citing a missing ETL data environment; @zaneselvans pointed out my own materialize proved the setup existed and that the tests download their own data.)_
 
 ## Cross-cutting
 

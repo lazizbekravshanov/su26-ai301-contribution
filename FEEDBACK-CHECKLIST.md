@@ -25,7 +25,7 @@ not just noted once and forgotten.
 - [ ] **Verify external contracts by reading/executing, not assuming.** Confirm wire formats and API shapes against reality before wiring anything. _(Cycle 1: proved `disabled=True` → `options:{"disabled":true}` by running the deserialize path; Cycle 4: verified MiniMax chat vs. T2A endpoints/auth before coding.)_
 - [ ] **Find an in-repo "Match" pattern** — an analogous existing implementation to mirror, so the fix looks native. _(All cycles.)_
 - [ ] **Front-load design questions** in the claim/PR before writing code, and keep the offer open in the PR. _(Cycle 2: asked "hard error vs. graceful?" up front.)_
-- [ ] **When a data label looks physically wrong, check the authoritative source document, not just the raw file.** _(Cycle 6: the raw EIA sheet labels petcoke stocks "thousand barrels", but petcoke is a solid; @zaneselvans settled it with the EIA-923 form instructions (short tons), and @aesharpe is emailing EIA about the label error.)_
+- [ ] **When a data label looks physically wrong, check the authoritative source document, and say so on the PR instead of quietly working around it.** _(Cycle 6: the raw EIA sheet labels petcoke stocks "thousand barrels", but petcoke is a solid; @zaneselvans settled it with the EIA-923 form instructions (short tons), @aesharpe escalated it to EIA, and on 2026-08-05 EIA confirmed their own label was wrong. Raising the contradiction fixed the upstream data source, not just our reading of it.)_
 
 ## Phase III — Build
 

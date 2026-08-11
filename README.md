@@ -1268,6 +1268,17 @@ review also caught a genuine error in EIA's published data, not just in this int
 step, on my side:** merge `upstream/main` into the branch, run `pixi run pytest-ci` (about half an
 hour), and post the result on the PR.
 
+**Dependency bump broke the migration, then got fixed upstream (2026-08-08 to 2026-08-10).**
+@zaneselvans's 2026-08-08 merge of `main` into the branch pulled in Alembic 1.19, which autogenerates
+`CHECK` constraints differently than the version the migration was written against, and broke the
+fuel-stocks migration; he flagged it on the PR and apologized, since it was his merge that caused the
+drift, not my code. @aesharpe regenerated the migration and merged `main` into the branch again on
+2026-08-10 ("Update migration"), and @zaneselvans confirmed the same day there had been "a bugfix to
+alembic so hopefully that problem doesn't recur." As of this check the PR's CI is running against that
+latest merge (`ci-unit`, `ci-docs`, `ci-dg-smoke`, `ci-integration`, `ci-coverage` all in progress, none
+red yet). Per the hold while maintainers are actively pushing their own merges into this branch, I have
+not pushed anything; the local `pixi run pytest-ci` run is still owed once the branch settles.
+
 **Learnings (Cycle 6):** *a data label that contradicts physical reality is worth escalating, not
 working around.* The raw EIA sheet reported petroleum coke stocks in thousand barrels even though
 petcoke is a solid. Rather than silently converting or copying the odd label through, I laid out the
@@ -1857,3 +1868,5 @@ I am responsible for every line in my pull request. This table logs how I used A
 | 2026-07-14 | Claude Code | Implementing @orhun's #1584 follow-up (pure discovery when `--config` is omitted) + docs; addressing @SmittieC's #3800 export-schema request; and a CodeScene refactor (`_seed_builtin_voices`) on #3801 | I designed the resolution change to preserve explicit-`--config` behavior, re-ran the 8 behavioral scenarios + workspace gate myself, confirmed each schema regen was surgical (only the intended enum, no env-noise), and reviewed every diff before pushing |
 | 2026-07-15 | Claude Code | Fixing @snopoke's flagged `test_team_scoped_services` on #3801; **root-causing #3800's red cost-tracking test as a stale-base flake** (not my code, passes on clean `main`; main's `d34e0fd0` froze time after my branch); rebasing **both** OCS PRs onto current `main` with migration renumbering; and this submission-ready README pass | I confirmed the cost-test failure against clean `upstream/main` before attributing it, backed up both branches before rebasing, verified `makemigrations --check`, ran the cost/voice/schema suites + ruff after each rebase, chose the migration numbers and dependency re-points myself, and reviewed every commit/comment/journal edit; the merge-order coordination note was my call |
 | 2026-07-15 | Claude Code | Rubric-alignment pass: adding a cross-cycle UMPIRE table, numbered reproduction steps + explicit Expected-vs-Actual and per-cycle "Challenges Faced" for cycles 2 to 5, and posting re-review @mentions on the OCS PRs (external contributors can't request reviewers via the API) | I supplied every technical detail from the actual work (real errors, file:line, git-log dating), verified each close-keyword/reviewer state via the GitHub API, and decided which fixes were mine vs. process-only (Slack posts + Course-Portal check-ins are the student's to submit) |
+| 2026-08-11 | Claude Code | Automated routine check across all six active contributions (marimo-lsp #643/#644, pyfixest #1236, mteb #5026, pudl #5431, git-cliff #1583/#1584): verified merge/close status against the upstream git history rather than trusting rendered page summaries, traced pudl's 2026-08-08 to 2026-08-10 Alembic migration break-and-fix, confirmed no new maintainer reply on pyfixest #1236 and no new activity on mteb #5026 beyond 2026-07-31, and updated this README | I cross-checked every "merged" claim against the real upstream commit log (`git log` for the PR number) before writing it down, confirmed via the PR's own commit list that @aesharpe, not me, pushed the 2026-08-10 migration fix, and held to the standing rule not to push to the pudl branch while maintainers are actively merging into it |
+

@@ -337,3 +337,52 @@ this is the likely next merge.
   which, for volunteer-run open source, is the scarcest resource there is.
 - **The best outcomes were collaborative.** On multiple PRs the maintainer took my work the last
   mile and my input still shaped the final result. In open source, that's what success looks like.
+
+---
+
+## For the Next Fellow
+
+*Written at the end, 2026-08-12, for whoever starts next.*
+
+I got ten cycles in and passed. Here is what I would tell myself in June, in as few words as I can.
+
+### A red check is a symptom, not a diagnosis
+
+If every house on the street has its smoke alarm going, it is not your toast. Before you fix a failing check, run the same job on `main`. Four times this summer a scary red thing turned out to belong to everyone: a Codecov upload, a GitLab 403, a stale base, two missing environment variables that produced 929 errors in five seconds. Zero of them were my code. The check that costs one command saves you a day.
+
+### Watch for the dog that did not bark
+
+One PR sat four days with two approvals and looked perfectly healthy. Nothing was red. Nothing was anything: the workflows had never run, parked behind a fork approval gate. Absence is harder to see than failure, because your eye is trained to hunt for the red X. Once a day, ask what should be there and is not.
+
+### The scarcest thing is not your time
+
+It is the maintainer's attention. Treat it like a doctor's appointment: show up with your symptoms already written down. I predicted a migration collision at open time and said who would pay for it. When it happened, the fix was one sentence and one commit, and the maintainer merged 53 seconds later. The prediction did not improve the code. It deleted the surprise.
+
+### Do not fool yourself, you are the easiest one to fool
+
+Feynman's line, and it is the whole job. Never write "this should work." Watch the test go red before you make it green. When I renamed a data split, I reran the task purely to see the score stay at 0.594. It did. That number is worth more than any paragraph of reasoning about why a rename is safe.
+
+### Pick the maintainer, not just the issue
+
+I chose two Rust issues partly because the maintainer approved them within a day. Three weeks later, after three polite check-ins, still nothing, and I closed both. The code was fine. I had read one fast reply as a permanent property. Responsiveness is weather, not climate. Check the last month of merges, not the last message.
+
+### A note is not a lock
+
+I ran an agent that watched my PRs and could push. My journal recorded a decision to hold one change. The agent's instructions said push changes. It pushed. Nothing broke, and that was luck, not design. If a decision matters, put it where the action happens or do not hand the action away.
+
+### Check the premise before you press send
+
+An hour before this journal closed I nearly sent a message asking maintainers to run CI that had already run and passed. A drafted comment carries the world as it was when you wrote it, and on a live PR that expires fast. One check before sending.
+
+### Go back to the same repo
+
+My fastest two merges landed the same day, in a codebase I had already worked in twice. Being useful somewhere new is a skill. Being useful somewhere familiar is compounding. Do not collect repositories, collect depth in a few.
+
+### What I would do differently
+
+1. Check whether a repo dismisses stale approvals before deciding to sit on a fix. I held one for six days to protect approvals that were never at risk.
+2. Nudge at week one, decide at week two. Three weeks of silence was knowable much earlier.
+3. Never give an unattended agent push rights to a PR under review.
+4. Reread my own plan before opening a PR. One went up ahead of its plan and had to be withdrawn.
+
+The rest is just showing up, reading carefully, and refusing to guess.

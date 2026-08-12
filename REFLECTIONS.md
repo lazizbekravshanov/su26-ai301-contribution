@@ -7,8 +7,14 @@ matters most — **how it helped the people who use and maintain these projects.
 The formal phase-by-phase write-ups are in [README.md](README.md); this is the version that
 explains the actual engineering and its impact.
 
-**Summary:** 6 pull requests merged, 3 in review, and 1 draft — across six projects and three languages
-(TypeScript, Python, Rust).
+**Summary, final:** **10 pull requests merged, 1 approved and awaiting merge, 3 withdrawn**, across six
+projects and three languages (TypeScript, Python, Rust), closing 7 upstream issues. The practicum ended
+2026-08-12 with pudl #5431 merged.
+
+The per-cycle sections below were written as each cycle finished, so cycles 1 to 7 are covered here in
+depth; cycles 8, 9 and 10 arrived later and their full write-ups live in
+[README.md](README.md). The overall retrospective is the
+[Closing Reflection](README.md#closing-reflection).
 
 ---
 
@@ -232,7 +238,7 @@ explicit `--config` still overrides everything — and updated the documentation
 a more maintainable codebase (an honest `Option` instead of a sentinel default value). Second — and
 easy to overlook — by **verifying the feature already existed and choosing not to duplicate it, I
 saved the maintainer from reviewing redundant work.** Declining to add code is sometimes the most
-useful contribution. [PR #1584](https://github.com/orhun/git-cliff/pull/1584) — in review.
+useful contribution. [PR #1584](https://github.com/orhun/git-cliff/pull/1584), withdrawn 2026-08-04 after three weeks with no maintainer review, closed with an offer to reopen.
 
 ---
 

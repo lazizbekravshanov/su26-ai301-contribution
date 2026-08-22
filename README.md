@@ -192,7 +192,56 @@ Fixed test-first, using the same discipline as the original work. I extracted th
 
 I offered the hard-error alternative for the nonexistent-path case rather than assuming it, since erroring instead of warning is a behavior change and that call is @orhun's. Also removed the two em dashes the earlier repository audit had flagged in this branch, so it now matches the writing convention used everywhere else in this work.
 
+
+**A second session was building the same fix at the same time, and what that turned up (2026-08-21).** Two Claude Code sessions were open on this machine and both started on @orhun's review. One of them noticed the other's edits landing live in `~/pet/git-cliff` (a clean tree grew 119 uncommitted insertions, and the same file hashed differently 25 seconds apart), stopped before writing anything, and handed its work over instead. This is the Cycle 4 hazard repeating exactly: *if two sessions ever run on one repo, stop one first.* The saving move was checking `git status` and file mtimes before editing rather than after, which is the only reason nothing got interleaved.
+
+The stood-down session had already reproduced both defects against a built binary, and two findings from it are worth keeping.
+
+**The built-in template trap.** `--config` also accepts a built-in name (`--config keepachangelog`), and a built-in name is never an existing file. Any "the explicit path does not exist" branch therefore fires on valid input. The first version of the fix warned unconditionally, so every built-in invocation printed two contradicting lines:
+
+```
+WARN  Configuration file not found: "keepachangelog", falling back to the user configuration
+INFO  Using built-in configuration file: keepachangelog
+```
+
+That warning was new: `d23f4d3` has no `tracing::warn` anywhere in the resolution path. It was fixed once flagged, by deferring the filesystem check until `--config-url` and the built-in configurations have been ruled out, which is the better shape anyway. Verified afterwards: the warning is gone and the built-in still applies.
+
+**Still open, and the honest correction to the note above: the `--workdir` fix only covers absolute paths.** `workdir.unwrap_or(current_dir).ancestors()` uses the value exactly as given, so for a *relative* `--workdir` the ancestor chain is only that value's own components and then `""`, and discovery stops at the current directory instead of continuing to the filesystem root. Same target directory, two spellings, two answers:
+
+```
+layout: <base>/deep/cliff.toml , repo at <base>/deep/a/b/project , cwd <base>/deep/a
+
+--workdir <base>/deep/a/b/project  ->  INFO Using configuration from: <base>/deep/cliff.toml
+--workdir b/project                ->  WARN "cliff.toml" is not found, using the default configuration
+```
+
+So @orhun's original complaint, that discovery starts from the shell's directory rather than the one named, is still true whenever `--workdir` is relative. That is the common case, and the repository's own fixture uses `--workdir .github/fixtures/`. Resolving against the current directory first handles both spellings, because `Path::join` with an absolute path replaces rather than appends:
+
+```rust
+let search_root = match workdir {
+    Some(workdir) => current_dir.join(workdir),
+    None => current_dir.to_path_buf(),
+};
+```
+
+The regression test to add is the relative case specifically, since the absolute one already passes. **`3d3df5a` is already pushed to #1584 carrying this gap**, so the claim that both review points are fixed is premature: one is fixed, one is half fixed, and the built-in warning fix is not committed yet. Recording it that way here rather than after @orhun finds it. Working notes and a runnable reproduction are kept outside this repository in `~/pet/gc-1584-notes/`.
+
 **CI diagnosis, redone against current `main` as the note above required.** The red `Test suite` on #1584 is the Codecov-upload step, and the same workflow fails on upstream `main` in all five of its most recent runs, so it is repo-side and not caused by this branch. The rollup on the PR is **107 checks passing, 1 failing** (that upload), 1 skipped. **#1583** needs no rebase: it is two commits behind `main` and merges cleanly, so it is presumably queued behind #1584.
+
+**A third point, nine hours later (2026-08-21 23:16), and it was caused by my own fix.** @orhun came back the same evening: *"Found another issue. Could we resolve the filesystem config only after checking `--config-url` and built-in configs? Currently `--config detailed` emits a misleading 'file not found, falling back' warning even though the built-in config is used successfully."*
+
+He is right, and this one is worth recording because the warning I added the previous day is what exposed it. `--config` accepts either a filesystem path or the name of a built-in configuration such as `detailed`. Reproduced immediately:
+
+```
+WARN  > Configuration file not found: "detailed", falling back to the user configuration
+INFO  > Using built-in configuration file: detailed
+```
+
+Two contradictory lines about the same run. The ordering flaw predates me: the filesystem was resolved eagerly, before the code decided whether `--config-url`, a built-in, or a file would actually supply the configuration. That was harmless while the resolution was silent, and my warning turned a latent ordering problem into user-visible noise. A warning is only as good as the moment it fires in.
+
+Fixed in `ed10bfc` by moving the lookup into the branch that consumes it, so the filesystem is touched only once the URL and built-in sources are ruled out. Verified all four paths against a rebuilt binary rather than assuming the change was narrow: a built-in name no longer warns, a genuinely missing path still does, plain discovery still works, and the `--workdir` fix from the previous day is intact. Workspace tests 10 plus 89, clippy and nightly fmt clean by exit code.
+
+Worth being honest about a limit here: unlike the `--workdir` regression, this one has no unit test. The ordering lives inside a long function whose branch chain cannot be exercised without a substantial refactor I did not think was mine to impose mid-review, so it is verified by running the CLI across the four cases instead. The five `resolve_config_path` tests still cover that function's own behavior.
 
 ---
 
